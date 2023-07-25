@@ -36,4 +36,101 @@ end
 
 
 
+--1: dif is the distance between current and target
+--2: lower vals of stiff mean that it is slower(lags behind more) 
+--   This means slower acceleration. This acceleration is then added to vel.
+--4: apply velocity to the current value, as well as adding bounce factor.
+--5: returns the new value, as well as the velocity at that moment.
+
+--Paramter details:
+-- current: the current value(like position, rotation, etc.) of object that will be moved.
+-- target: the target value - this is what it will bounce towards
+-- stiff: how stiff it should be(between 0-1)
+-- bounce: how bouncy it should be(between 0-1)
+-- vel: the current velocity of the current value.
+
+-- Returns the new position and new velocity.
+function squapi.bouncetowards(current, target, stiff, bounce, vel)	
+	local dif = target - current
+	vel = vel + ((dif - vel * stiff) * stiff)
+	current = (current + vel) + (dif * bounce)
+	return current, vel
+end
+
+
+
+-- How to use
+-- inside of events.render(delta, context) is where this function goes(squapi.earhysics())
+-- the input paramaters:
+-- element: 				the model path of the ear
+-- earvel1 and earvel2: 	the input velocity variables to store the ears velocity
+-- add two variables to your script, perferable called earvel1 and earvel2(though you can name them whatever), and set them to 0
+-- call the function as: earvel1, earvel2 = squapi.earphysics(paramter stuff) - or whatever earvel1 and earvel2 are called
+-- bendstrength: 			how strong the ears bend when moving
+-- earstiffness:			how stiff the ears are
+-- earbounce: 				how bouncy the ears are
+
+-- if you have more than one ear with the same setting, instead of givving each their own earvel variables, just call the function as normal without the earvel1, earvel2 = 
+function squapi.earphysics(element, earvel1, earvel2, bendstrength, earstiffness, earbounce)
+	local vel = player:getVelocity():dot((player:getLookDir().x_z):normalize())
+	local yvel = player:getVelocity()[2]
+	local headrot = vanilla_model.HEAD:getOriginRot()
+
+	headrot = squapi.exorcise(headrot)
+
+	earrot[1], earvel1 = squapi.bouncetowards(earrot[1], headrot[1], earstiffness, earbounce, earvel1)
+	earrot[2], earvel2 = squapi.bouncetowards(earrot[2], headrot[2], earstiffness, earbounce, earvel2)
+	earrot[3] = earrot[2]/3
+
+	local bend = bendstrength
+	if headrot[1] < -22.5 then bend = -bend end
+
+	--y vel change
+	earvel1 = earvel1 + yvel * bend
+	--x vel change
+	earvel1 = earvel1 + vel * bend * 1.5
+	
+	--applies rotations to ears
+	element:setRot(earrot[1] + 45, earrot[2]/4, earrot[3])
+	return earvel1, earvel2
+end
+
+
+-- Repairs incorrect head rotations
+function squapi.exorcise(headrot)
+	-- prevents demonic possesion
+	if headrot[2] > 90 then headrot[2] = headrot[2] - 360
+	elseif headrot[2] < -90 then headrot[2] = headrot[2] + 360 end
+	if headrot[1] > 100 then headrot[1] = headrot[1] - 360
+	elseif headrot[1] < -100 then headrot[1] = headrot[1] + 360 end
+	return headrot
+end
+
+
+function squapi.setFirstPersonHandPos(element, x, y, z)
+	function events.tick()
+		if renderer:isFirstPerson() then 
+			element:setPos(x, y, z)
+		else 
+			element:setPos(0, 0, 0) end
+	end
+end
+
+local function toparabola(first, mid, last, X)
+
+    local denom = (first.x - mid.x) * (first.x - last.x) * (mid.x - last.x)
+    local a = (last.x * (mid.y - first.y) + mid.x * (first.y - last.y) + first.x * (last.y - mid.y)) / denom
+    local b = (last.x^2 * (first.y - mid.y) + mid.x^2 * (last.y - first.y) + first.x^2 * (mid.y - last.y)) / denom
+    local c = (mid.x * last.x * (mid.x - last.x) * first.y + last.x * first.x * (last.x - first.x) * mid.y + first.x * mid.x * (first.x - mid.x) * last.y) / denom
+
+	
+	
+    return a * X^2 + b * X + c
+end
+
+
+
+
+
 return squapi
+
