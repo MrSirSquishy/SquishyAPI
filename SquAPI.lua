@@ -18,6 +18,77 @@ local squapi = {}
 
 
 
+squapi.bounceObject = {}
+function squapi.bounceObject:new(stiff, bounce, pos, o)
+	o = o or {}
+	setmetatable(o, self)
+	self.__index = self
+	self.vel = 0
+	self.pos = pos or 0
+	self.stiff = stiff or .005
+	self.bounce = bounce or .08
+	return o
+end	
+function squapi.bounceObject:doBounce(target)
+	target = target or 2
+	local dif = target - self.pos
+	self.vel = self.vel + ((dif - self.vel * self.stiff) * self.stiff)
+	self.pos = (self.pos + self.vel) + (dif * self.bounce)
+	return self.pos
+end
+
+
+--BOUNCY EARS
+--guide:(note if it has a * that means you can leave it blank to use reccomended settings)
+-- element: the ear element that you want to affect(models.[modelname].path)
+-- *element2: the second element you'd like to use(second ear), set to nil or leave empty to ignore
+-- *bendstrength: how strong the ears bend when you move(jump, fall, run, etc.)
+-- *earstiffness: how stiff the ears movement is(0-1)
+-- *earbounce: how bouncy the ears are(0-1)
+
+function squapi.ear(element, element2, bendstrength, earstiffness, earbounce)
+	local element2 = element2 or nil
+	local bendstrength = bendstrength or 2
+	local earstiffness = earstiffness or 0.025
+	local earbounce = earbounce or 0.1
+	
+	squapi.eary = squapi.bounceObject:new(earstiffness, earbounce)
+	squapi.earx = squapi.bounceObject:new(earstiffness, earbounce)
+	
+	local oldpose = "STANDING"
+	function events.render(delta, context)
+		local vel = player:getVelocity():dot((player:getLookDir().x_z):normalize())
+		local yvel = player:getVelocity()[2]
+		local headrot = vanilla_model.HEAD:getOriginRot()
+		headrot = squapi.exorcise(headrot)
+		
+		local bend = bendstrength
+		if headrot[1] < -22.5 then bend = -bend end
+		
+		--moves when player crouches
+		local pose = player:getPose()
+		if pose == "CROUCHING" and oldpose == "STANDING" then
+			squapi.eary.vel = squapi.eary.vel + 10
+		end
+		oldpose = pose
+		
+		--y vel change
+		squapi.eary.vel = squapi.eary.vel + yvel * bend
+		--x vel change
+		squapi.eary.vel = squapi.eary.vel + vel * bend * 1.5
+		
+		local rot1 = squapi.eary:doBounce(headrot[1])
+		local rot2 = squapi.earx:doBounce(headrot[2])
+		local rot3 = rot2/3
+		
+		element:setRot(rot1 + 45, rot2/4, rot3)
+
+		if not element2 ~= nil then 
+			element2:setRot(rot1 + 45, rot2/4, rot3) 
+		end
+	end
+end
+
 -- Simplified Animated Texture script.
 -- element: 		the part of your model who's texture will be aniamted
 -- numberofframes: 	the number of frames
@@ -34,8 +105,48 @@ function squapi.animateTexture(element, numberofframes, framepercent, slowfactor
 end
 
 
+-- Repairs incorrect head rotations
+function squapi.exorcise(headrot)
+	-- prevents demonic possesion
+	while(headrot[2] > 90)
+	do
+		headrot[2] = headrot[2] - 360
+	end
+	while(headrot[2] < -90)
+	do
+		headrot[2] = headrot[2] + 360
+	end
+
+	while(headrot[1] > 100)
+	do
+		headrot[1] = headrot[1] - 360
+	end
+	while(headrot[1] < -100)
+	do
+		headrot[1] = headrot[1] + 360
+	end
+	return headrot
+end
 
 
+function squapi.setFirstPersonHandPos(element, x, y, z)
+	function events.Render(delta, context)
+		if context == "FIRST_PERSON" then 
+			element:setPos(x, y, z)
+		else 
+			element:setPos(0, 0, 0) end
+	end
+end
+
+
+--THE JUNKYARD. Old, unfinished, or scrapped stuff. Don't use these, but you can climb around I guess
+-----------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------
+
+
+
+--LEGACY FOR OLDER STUFF. USE bounceObject INSTEAD
 --1: dif is the distance between current and target
 --2: lower vals of stiff mean that it is slower(lags behind more) 
 --   This means slower acceleration. This acceleration is then added to vel.
@@ -56,7 +167,6 @@ function squapi.bouncetowards(current, target, stiff, bounce, vel)
 	current = (current + vel) + (dif * bounce)
 	return current, vel
 end
-
 
 
 -- How to use
@@ -95,27 +205,7 @@ function squapi.earphysics(element, earvel1, earvel2, bendstrength, earstiffness
 	return earvel1, earvel2
 end
 
-
--- Repairs incorrect head rotations
-function squapi.exorcise(headrot)
-	-- prevents demonic possesion
-	if headrot[2] > 90 then headrot[2] = headrot[2] - 360
-	elseif headrot[2] < -90 then headrot[2] = headrot[2] + 360 end
-	if headrot[1] > 100 then headrot[1] = headrot[1] - 360
-	elseif headrot[1] < -100 then headrot[1] = headrot[1] + 360 end
-	return headrot
-end
-
-
-function squapi.setFirstPersonHandPos(element, x, y, z)
-	function events.tick()
-		if renderer:isFirstPerson() then 
-			element:setPos(x, y, z)
-		else 
-			element:setPos(0, 0, 0) end
-	end
-end
-
+--currently broken
 local function toparabola(first, mid, last, X)
 
     local denom = (first.x - mid.x) * (first.x - last.x) * (mid.x - last.x)
