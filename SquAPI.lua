@@ -24,7 +24,7 @@ function squapi.smoothHead(element)
 	local mainheadrot = vec(0, 0, 0)
 	function events.render(delta, context)
 		local headrot = vanilla_model.HEAD:getOriginRot()
-		mainheadrot[1] = mainheadrot[1] + (headrot[1] - mainheadrot[1])/12 - bodyrot/50
+		mainheadrot[1] = mainheadrot[1] + (headrot[1] - mainheadrot[1])/12
 		mainheadrot[2] = mainheadrot[2] + (headrot[2] - mainheadrot[2])/12
 		mainheadrot[3] = mainheadrot[2]/5
 
