@@ -24,6 +24,7 @@ function squapi.smoothHead(element)
 	local mainheadrot = vec(0, 0, 0)
 	function events.render(delta, context)
 		local headrot = vanilla_model.HEAD:getOriginRot()
+		headrot = squapi.exorcise(headrot)
 		mainheadrot[1] = mainheadrot[1] + (headrot[1] - mainheadrot[1])/12
 		mainheadrot[2] = mainheadrot[2] + (headrot[2] - mainheadrot[2])/12
 		mainheadrot[3] = mainheadrot[2]/5
@@ -91,6 +92,8 @@ function squapi.ear(element, element2, earoffset, bendstrength, earstiffness, ea
 		local pose = player:getPose()
 		if pose == "CROUCHING" and oldpose == "STANDING" then
 			squapi.eary.vel = squapi.eary.vel + 10
+		elseif pose == "STANDING" and oldpose == "CROUCHING" then
+			squapi.eary.vel = squapi.eary.vel - 10
 		end
 		oldpose = pose
 		
@@ -103,13 +106,55 @@ function squapi.ear(element, element2, earoffset, bendstrength, earstiffness, ea
 		local rot2 = squapi.earx:doBounce(headrot[2])
 		local rot3 = rot2/3
 		
-		element:setRot(rot1 + earoffset, rot2/4, rot3)
+		element:setOffsetRot(rot1 + earoffset, rot2/4, rot3)
 
 		if not element2 ~= nil then 
-			element2:setRot(rot1 + earoffset, rot2/4, rot3) 
+			element2:setOffsetRot(rot1 + earoffset, rot2/4, rot3) 
 		end
 	end
 end
+
+--BOUNCY BEWB PHYSICS
+-- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
+-- element: 	 the bewb element that you want to affect(models.[modelname].path)
+-- *doidle: 	 the bewb will slowly move idly in a sort of breathing animation, normally true, set this to false to disable that.
+-- *bendability: how much it should bend when you move. reccomended 2, if you're bored set to 10
+-- *stiff: 		 how stiff they are(0-1)
+-- *bounce: 	 how bouncy they are(0-1)
+function squapi.bewb(element, doidle, bendability, stiff, bounce)
+	local doidle = doidle or true
+	local stiff = stiff or 0.025
+	local bounce = bounce or 0.06
+	local bendability = bendability or 2
+	local bewby = squapi.bounceObject:new(stiff, bounce)
+	local target = 0
+
+	local oldpose = "STANDING"
+	function events.Render(delta, context)
+		local vel = player:getVelocity():dot((player:getLookDir().x_z):normalize())
+		local yvel = player:getVelocity()[2]
+		local worldtime = world.getTime() + delta
+
+		if doidle then target = math.sin(worldtime/8)*2*bendability end
+
+		--physics when crouching/uncrouching
+		local pose = player:getPose()
+		if pose == "CROUCHING" and oldpose == "STANDING" then
+			bewby.vel = bewby.vel + bendability
+		elseif pose == "STANDING" and oldpose == "CROUCHING" then
+			bewby.vel = bewby.vel - bendability
+		end
+		oldpose = pose
+
+		--physics when moving
+		bewby.vel = bewby.vel - yvel/2 * bendability
+		bewby.vel = bewby.vel - vel/3 * bendability
+
+		element:setOffsetRot(bewby:doBounce(target),0,0)
+	end
+end
+
+
 
 -- Easy-use Animated Texture.
 -- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
@@ -262,7 +307,7 @@ function squapi.earphysics(element, earvel1, earvel2, bendstrength, earstiffness
 	local vel = player:getVelocity():dot((player:getLookDir().x_z):normalize())
 	local yvel = player:getVelocity()[2]
 	local headrot = vanilla_model.HEAD:getOriginRot()
-
+	
 	headrot = squapi.exorcise(headrot)
 
 	earrot[1], earvel1 = squapi.bouncetowards(earrot[1], headrot[1], earstiffness, earbounce, earvel1)
