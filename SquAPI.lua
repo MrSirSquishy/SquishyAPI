@@ -22,6 +22,7 @@ local squapi = {}
 -- 
 -- IMPORTANT: for this to work you need to remove the "Head" element, as if it is there it will continue to use the minecraft head rotation. renaming it to "head" will work fine.
 function squapi.smoothHead(element, keeporiginalheadpos)
+	local keeporiginalheadpos = keeporiginalheadpos or true
 	local mainheadrot = vec(0, 0, 0)
 	function events.render(delta, context)
 		local headrot = vanilla_model.HEAD:getOriginRot()
@@ -31,7 +32,7 @@ function squapi.smoothHead(element, keeporiginalheadpos)
 		mainheadrot[3] = mainheadrot[2]/5
 
 		element:setOffsetRot(mainheadrot)
-		element:setPos(vanilla_model.HEAD:getOriginPos())
+		if keeporiginalheadpos then element:setPos(vanilla_model.HEAD:getOriginPos()) end
 	end
 end
 
