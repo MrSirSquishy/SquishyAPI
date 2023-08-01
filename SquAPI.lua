@@ -62,15 +62,17 @@ end
 --guide:(note if it has a * that means you can leave it blank to use reccomended settings)
 -- element: 		the ear element that you want to affect(models.[modelname].path)
 -- *element2: 		the second element you'd like to use(second ear), set to nil or leave empty to ignore
+-- *earoffset:		how the ears are normally offset. set to 0 for them to normally point up, or set to 45 to have the ears be angled by 45 normally.
 -- *bendstrength: 	how strong the ears bend when you move(jump, fall, run, etc.)
 -- *earstiffness: 	how stiff the ears movement is(0-1)
 -- *earbounce: 		how bouncy the ears are(0-1)
 
-function squapi.ear(element, element2, bendstrength, earstiffness, earbounce)
+function squapi.ear(element, element2, earoffset, bendstrength, earstiffness, earbounce)
 	local element2 = element2 or nil
 	local bendstrength = bendstrength or 2
 	local earstiffness = earstiffness or 0.025
 	local earbounce = earbounce or 0.1
+	local earoffset = earoffset or 45
 	
 	squapi.eary = squapi.bounceObject:new(earstiffness, earbounce)
 	squapi.earx = squapi.bounceObject:new(earstiffness, earbounce)
@@ -101,10 +103,10 @@ function squapi.ear(element, element2, bendstrength, earstiffness, earbounce)
 		local rot2 = squapi.earx:doBounce(headrot[2])
 		local rot3 = rot2/3
 		
-		element:setRot(rot1 + 45, rot2/4, rot3)
+		element:setRot(rot1 + earoffset, rot2/4, rot3)
 
 		if not element2 ~= nil then 
-			element2:setRot(rot1 + 45, rot2/4, rot3) 
+			element2:setRot(rot1 + earoffset, rot2/4, rot3) 
 		end
 	end
 end
