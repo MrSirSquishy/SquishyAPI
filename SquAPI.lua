@@ -19,8 +19,9 @@ local squapi = {}
 
 -- SMOOTH HEAD
 -- element: the head element that you wish to effect
+-- 
 -- IMPORTANT: for this to work you need to remove the "Head" element, as if it is there it will continue to use the minecraft head rotation. renaming it to "head" will work fine.
-function squapi.smoothHead(element)
+function squapi.smoothHead(element, keeporiginalheadpos)
 	local mainheadrot = vec(0, 0, 0)
 	function events.render(delta, context)
 		local headrot = vanilla_model.HEAD:getOriginRot()
@@ -29,9 +30,11 @@ function squapi.smoothHead(element)
 		mainheadrot[2] = mainheadrot[2] + (headrot[2] - mainheadrot[2])/12
 		mainheadrot[3] = mainheadrot[2]/5
 
-		element:setRot(mainheadrot)
+		element:setOffsetRot(mainheadrot)
+		element:setPos(vanilla_model.HEAD:getOriginPos())
 	end
 end
+
 
 -- MOVING EYES
 --guide:(note if it has a * that means you can leave it blank to use reccomended settings)
@@ -41,7 +44,8 @@ end
 -- *updistance: 	the distance from the eye to it's upmost posistion
 -- *downdistance: 	the distance from the eye to it's downmost posistion
 
-function squapi.eye(element, leftdistance, rightdistance, updistance, downdistance)
+function squapi.eye(element, leftdistance, rightdistance, updistance, downdistance, switchvalues)
+	local switchvalues = switchvalues or false
 	local left = leftdistance or .25
 	local right = rightdistance or 1.25
 	local up = updistance or 0.5
@@ -53,30 +57,48 @@ function squapi.eye(element, leftdistance, rightdistance, updistance, downdistan
 
 		local x = -squapi.parabolagraph(-50, -left, 0,0, 50, right, headrot[2])
 		local y = squapi.parabolagraph(-90, -down, 0,0, 90, up, headrot[1])
-	
-		element:setPos(x,y,0)
+		if switchvalues then
+			element:setPos(0,y,-x)
+		else
+			element:setPos(x,y,0)
+		end
 	end
 end	
 
+--BLINK
+-- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
+-- animation: 				the blink animation to play
+-- *chancemultipler:	higher values make blinks less likely to happen, lower values make them more common.
+function squapi.blink(animation, chancemultipler)
+	local blinkchancemultipler = chancemultipler or 1
+	function events.render(delta, context)
+		if math.random(0, 200) == 1 and animation:isStopped() then
+			animation:play()
+		end
+	end	
+end
 
 --BOUNCY EARS
 --guide:(note if it has a * that means you can leave it blank to use reccomended settings)
 -- element: 		the ear element that you want to affect(models.[modelname].path)
 -- *element2: 		the second element you'd like to use(second ear), set to nil or leave empty to ignore
+-- *doearflick:		reccomended true. This adds the random chance for the ears to do a "flick" animation, set to false to disable.
 -- *earoffset:		how the ears are normally offset. set to 0 for them to normally point up, or set to 45 to have the ears be angled by 45 normally.
 -- *bendstrength: 	how strong the ears bend when you move(jump, fall, run, etc.)
 -- *earstiffness: 	how stiff the ears movement is(0-1)
 -- *earbounce: 		how bouncy the ears are(0-1)
 
-function squapi.ear(element, element2, earoffset, bendstrength, earstiffness, earbounce)
+function squapi.ear(element, element2, doearflick, earoffset, bendstrength, earstiffness, earbounce)
+	local doearflick = doearflick or true
 	local element2 = element2 or nil
 	local bendstrength = bendstrength or 2
 	local earstiffness = earstiffness or 0.025
 	local earbounce = earbounce or 0.1
-	local earoffset = earoffset or 45
+	local earoffset = earoffset or 0
 	
 	squapi.eary = squapi.bounceObject:new(earstiffness, earbounce)
 	squapi.earx = squapi.bounceObject:new(earstiffness, earbounce)
+	squapi.earx2 = squapi.bounceObject:new(earstiffness, earbounce)
 	
 	local oldpose = "STANDING"
 	function events.render(delta, context)
@@ -101,15 +123,25 @@ function squapi.ear(element, element2, earoffset, bendstrength, earstiffness, ea
 		squapi.eary.vel = squapi.eary.vel + yvel * bend
 		--x vel change
 		squapi.eary.vel = squapi.eary.vel + vel * bend * 1.5
-		
+
+		if doearflick then
+			if math.random(0, 200) == 1 then
+				if math.random(0, 1) == 1 then
+					squapi.earx.vel = squapi.earx.vel + 50
+				else
+					squapi.earx2.vel = squapi.earx2.vel - 50
+				end
+			end
+		end
 		local rot1 = squapi.eary:doBounce(headrot[1])
 		local rot2 = squapi.earx:doBounce(headrot[2])
+		local rot2b = squapi.earx2:doBounce(headrot[2])
 		local rot3 = rot2/3
-		
+		local rot3b = rot2b/3
 		element:setOffsetRot(rot1 + earoffset, rot2/4, rot3)
 
-		if not element2 ~= nil then 
-			element2:setOffsetRot(rot1 + earoffset, rot2/4, rot3) 
+		if element2 ~= nil then 
+			element2:setOffsetRot(rot1 + earoffset, rot2b/4, rot3b) 
 		end
 	end
 end
