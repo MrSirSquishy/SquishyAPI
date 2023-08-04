@@ -10,7 +10,7 @@
 -- Author: Squishy
 -- Discord tag: mrsirsquishy
 
--- Version: 0.1
+-- Version: 0.17
 -- Legal: Do not Redistribute without explicit permission.
 
 
@@ -18,11 +18,33 @@ local squapi = {}
 
 
 -- SMOOTH HEAD
--- element: the head element that you wish to effect
--- 
+-- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
+-- element: 			the head element that you wish to effect
+-- keeporiginalheadpos: when true(automatically true) the heads position will change like normally, set to false to disable.
 -- IMPORTANT: for this to work you need to remove the "Head" element, as if it is there it will continue to use the minecraft head rotation. renaming it to "head" will work fine.
 function squapi.smoothHead(element, keeporiginalheadpos)
-	local keeporiginalheadpos = keeporiginalheadpos or true
+	if keeporiginalheadpos == nil then keeporiginalheadpos = true end
+	local mainheadrot = vec(0, 0, 0)
+	function events.render(delta, context)
+		local headrot = vanilla_model.HEAD:getOriginRot()
+		headrot = squapi.exorcise(headrot)
+		mainheadrot[1] = mainheadrot[1] + (headrot[1] - mainheadrot[1])/12
+		mainheadrot[2] = mainheadrot[2] + (headrot[2] - mainheadrot[2])/12
+		mainheadrot[3] = mainheadrot[2]/5
+		element:setOffsetRot(mainheadrot)
+		if keeporiginalheadpos then 
+			element:setPos(-vanilla_model.HEAD:getOriginPos()) 
+		end
+	end
+end
+
+-- SMOOTH HEAD WITH NECK
+-- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
+-- element:	 			the head element
+-- element2: 			the neck element
+-- keeporiginalheadpos: when true(automatically true) the heads position will change like normally, set to false to disable.
+function squapi.smoothHeadNeck(element, element2, keeporiginalheadpos)
+	if keeporiginalheadpos == nil then keeporiginalheadpos = true end
 	local mainheadrot = vec(0, 0, 0)
 	function events.render(delta, context)
 		local headrot = vanilla_model.HEAD:getOriginRot()
@@ -31,10 +53,14 @@ function squapi.smoothHead(element, keeporiginalheadpos)
 		mainheadrot[2] = mainheadrot[2] + (headrot[2] - mainheadrot[2])/12
 		mainheadrot[3] = mainheadrot[2]/5
 
-		element:setOffsetRot(mainheadrot)
-		if keeporiginalheadpos then element:setPos(vanilla_model.HEAD:getOriginPos()) end
+		element:setOffsetRot(mainheadrot[1]*0.6,mainheadrot[2]*0.7,mainheadrot[3])
+    	element2:setOffsetRot(mainheadrot[1]*0.4,mainheadrot[2]*0.2,0)
+		if keeporiginalheadpos then 
+			element2:setPos(-vanilla_model.HEAD:getOriginPos()) 
+		end
 	end
 end
+
 
 
 -- MOVING EYES
@@ -84,22 +110,24 @@ end
 -- element: 		the ear element that you want to affect(models.[modelname].path)
 -- *element2: 		the second element you'd like to use(second ear), set to nil or leave empty to ignore
 -- *doearflick:		reccomended true. This adds the random chance for the ears to do a "flick" animation, set to false to disable.
+-- *rangemultiplier at normal state of 1 the ears rotate from -90 to 90, this range will be multiplied by this, so a value of 0.5 would half the range
 -- *earoffset:		how the ears are normally offset. set to 0 for them to normally point up, or set to 45 to have the ears be angled by 45 normally.
 -- *bendstrength: 	how strong the ears bend when you move(jump, fall, run, etc.)
 -- *earstiffness: 	how stiff the ears movement is(0-1)
 -- *earbounce: 		how bouncy the ears are(0-1)
 
-function squapi.ear(element, element2, doearflick, earoffset, bendstrength, earstiffness, earbounce)
+function squapi.ear(element, element2, doearflick, rangemultiplier, earoffset, bendstrength, earstiffness, earbounce)
 	local doearflick = doearflick or true
 	local element2 = element2 or nil
 	local bendstrength = bendstrength or 2
 	local earstiffness = earstiffness or 0.025
 	local earbounce = earbounce or 0.1
 	local earoffset = earoffset or 0
+	local rangemultiplier = rangemultiplier or 0
 	
-	squapi.eary = squapi.bounceObject:new(earstiffness, earbounce)
-	squapi.earx = squapi.bounceObject:new(earstiffness, earbounce)
-	squapi.earx2 = squapi.bounceObject:new(earstiffness, earbounce)
+	squapi.eary = squapi.bounceObject:new()
+	squapi.earx = squapi.bounceObject:new()
+	squapi.earx2 = squapi.bounceObject:new()
 	
 	local oldpose = "STANDING"
 	function events.render(delta, context)
@@ -134,9 +162,9 @@ function squapi.ear(element, element2, doearflick, earoffset, bendstrength, ears
 				end
 			end
 		end
-		local rot1 = squapi.eary:doBounce(headrot[1])
-		local rot2 = squapi.earx:doBounce(headrot[2])
-		local rot2b = squapi.earx2:doBounce(headrot[2])
+		local rot1 = squapi.eary:doBounce(headrot[1] * rangemultiplier, earstiffness, earbounce)
+		local rot2 = squapi.earx:doBounce(headrot[2] * rangemultiplier, earstiffness, earbounce)
+		local rot2b = squapi.earx2:doBounce(headrot[2] * rangemultiplier, earstiffness, earbounce)
 		local rot3 = rot2/3
 		local rot3b = rot2b/3
 		element:setOffsetRot(rot1 + earoffset, rot2/4, rot3)
@@ -159,7 +187,7 @@ function squapi.bewb(element, doidle, bendability, stiff, bounce)
 	local stiff = stiff or 0.025
 	local bounce = bounce or 0.06
 	local bendability = bendability or 2
-	local bewby = squapi.bounceObject:new(stiff, bounce)
+	local bewby = squapi.bounceObject:new()
 	local target = 0
 
 	local oldpose = "STANDING"
@@ -183,7 +211,7 @@ function squapi.bewb(element, doidle, bendability, stiff, bounce)
 		bewby.vel = bewby.vel - yvel/2 * bendability
 		bewby.vel = bewby.vel - vel/3 * bendability
 
-		element:setOffsetRot(bewby:doBounce(target),0,0)
+		element:setOffsetRot(bewby:doBounce(target, stiff, bounce),0,0)
 	end
 end
 
@@ -197,9 +225,9 @@ end
 -- *slowfactor: 	increase this to slow down the animation. 
 -- *vertical:		set to true if you'd like the animation frames to go down instead of right.
 function squapi.animateTexture(element, numberofframes, framepercent, slowfactor, vertical)
+	vertical = vertical or false
+	frameslowfactor = slowfactor or 1
 	function events.tick()
-		vertical = vertical or false
-		frameslowfactor = slowfactor or 1
 		local time = world.getTime()
 		local frameshift = math.floor(time/frameslowfactor)%numberofframes*framepercent
 		if vertical then element:setUV(0, frameshift) else element:setUV(frameshift, 0) end
@@ -222,6 +250,35 @@ function squapi.setFirstPersonHandPos(element, x, y, z)
 		else 
 			element:setPos(0, 0, 0) end
 	end
+end
+
+--CENTAUR PHYSICS
+-- guide:
+-- centaurbody: the group of the body that contains all parts of the actual centaur part of the body, pivot should be placed near the connection between body and centaur body
+-- frontlegs: 	the group that contains both front legs
+-- backlegs: 	the group that contains both back legs
+function squapi.centuarPhysics(centaurbody, frontlegs, backlegs)
+	squapi.cent = squapi.bounceObject:new()
+	function events.render(delta, context)
+		local yvel = player:getVelocity()[2]
+		if player:isClimbing() then
+	
+		elseif pose == "FALL_FLYING" then
+		else	
+			centaurbody:setRot(squapi.cent.pos, 0, 0)
+			backlegs:setRot(squapi.cent.pos*1.5, 0, 0)
+			frontlegs:setRot(-squapi.cent.pos*3.5, 0, 0)
+		end
+		squapi.cent:doBounce(yvel * 40, 0.01, .2)
+	end
+end
+
+function squapi.getSpeed()
+
+end
+
+function squapi.tail()
+
 end
 
 
@@ -275,23 +332,22 @@ end
 
 --smooth bouncy stuff
 squapi.bounceObject = {}
-function squapi.bounceObject:new(stiff, bounce, pos, o)
+function squapi.bounceObject:new(o)
 	o = o or {}
 	setmetatable(o, self)
 	self.__index = self
 	self.vel = 0
-	self.pos = pos or 0
-	self.stiff = stiff or .005
-	self.bounce = bounce or .08
+	self.pos = 0
 	return o
 end	
-function squapi.bounceObject:doBounce(target)
-	target = target or 2
+function squapi.bounceObject:doBounce(target, stiff, bounce)
+	local target = target or 2
 	local dif = target - self.pos
-	self.vel = self.vel + ((dif - self.vel * self.stiff) * self.stiff)
-	self.pos = (self.pos + self.vel) + (dif * self.bounce)
+	self.vel = self.vel + ((dif - self.vel * stiff) * stiff)
+	self.pos = (self.pos + self.vel) + (dif * bounce)
 	return self.pos
 end
+
 
 
 --THE JUNKYARD. Old, unfinished, or scrapped stuff. Don't use these, but you can climb around I guess
