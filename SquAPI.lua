@@ -10,11 +10,29 @@
 -- Author: Squishy
 -- Discord tag: mrsirsquishy
 
--- Version: 0.17
+-- Version: 0.18
 -- Legal: Do not Redistribute without explicit permission.
 
+-- Don't be afraid to ask me for help, be afraid of not giving me enough info to help
 
 local squapi = {}
+
+
+
+-- Control Variables
+-- these variables can be changed within your script to control certain features of squapi
+-- to do so, call squapi.[variable name] = [what you want]
+-- within your script(do not modify these within squapi itself)
+
+--set to false to disable blinking, set to true to enable blinking
+squapi.doBlink = true
+
+--controls the scale of each eye. good for emotes.
+squapi.eyeScale = 1
+
+--how much the tails wag. increase this value to make the tails waggier. good for emotes.
+squapi.wagStrength = 1
+
 
 
 -- SMOOTH HEAD
@@ -26,8 +44,7 @@ function squapi.smoothHead(element, keeporiginalheadpos)
 	if keeporiginalheadpos == nil then keeporiginalheadpos = true end
 	local mainheadrot = vec(0, 0, 0)
 	function events.render(delta, context)
-		local headrot = vanilla_model.HEAD:getOriginRot()
-		headrot = squapi.exorcise(headrot)
+		local headrot = (vanilla_model.HEAD:getOriginRot()+180)%360-180
 		mainheadrot[1] = mainheadrot[1] + (headrot[1] - mainheadrot[1])/12
 		mainheadrot[2] = mainheadrot[2] + (headrot[2] - mainheadrot[2])/12
 		mainheadrot[3] = mainheadrot[2]/5
@@ -47,8 +64,7 @@ function squapi.smoothHeadNeck(element, element2, keeporiginalheadpos)
 	if keeporiginalheadpos == nil then keeporiginalheadpos = true end
 	local mainheadrot = vec(0, 0, 0)
 	function events.render(delta, context)
-		local headrot = vanilla_model.HEAD:getOriginRot()
-		headrot = squapi.exorcise(headrot)
+		local headrot = (vanilla_model.HEAD:getOriginRot()+180)%360-180
 		mainheadrot[1] = mainheadrot[1] + (headrot[1] - mainheadrot[1])/12
 		mainheadrot[2] = mainheadrot[2] + (headrot[2] - mainheadrot[2])/12
 		mainheadrot[3] = mainheadrot[2]/5
@@ -79,8 +95,7 @@ function squapi.eye(element, leftdistance, rightdistance, updistance, downdistan
 	local down = downdistance or 0.5
 	
 	function events.render(delta, context)
-		local headrot = vanilla_model.HEAD:getOriginRot()
-		headrot = squapi.exorcise(headrot)
+		local headrot = (vanilla_model.HEAD:getOriginRot()+180)%360-180
 
 		local x = -squapi.parabolagraph(-50, -left, 0,0, 50, right, headrot[2])
 		local y = squapi.parabolagraph(-90, -down, 0,0, 90, up, headrot[1])
@@ -89,52 +104,121 @@ function squapi.eye(element, leftdistance, rightdistance, updistance, downdistan
 		else
 			element:setPos(x,y,0)
 		end
+		element:setOffsetScale(squapi.eyeScale,squapi.eyeScale,squapi.eyeScale)
 	end
 end	
 
 --BLINK
 -- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
--- animation: 				the blink animation to play
+-- animation: 			the blink animation to play
 -- *chancemultipler:	higher values make blinks less likely to happen, lower values make them more common.
 function squapi.blink(animation, chancemultipler)
 	local blinkchancemultipler = chancemultipler or 1
 	function events.render(delta, context)
-		if math.random(0, 200) == 1 and animation:isStopped() then
+		if math.random(0, 200) == 1 and animation:isStopped() and squapi.doBlink then
 			animation:play()
 		end
 	end	
 end
+
+
+--TAIL PHYSICS!!
+--guide:(note if it has a * that means you can leave it blank to use reccomended settings)
+--tailsegs:				this is an ARRAY of each element/segment in your tail. for example: local array = {element, element2, etc.}
+--*intensity:			how intensly the tail moves when you rotate/move. Reccomend 2
+--*tailintesnityY:		how much the tail moves up and down
+--*tailintensityX:		how much the tail moves side to side
+--*tailYSpeed:			how fast the tail moves up and down
+--*tailXSpeed:			how fast the tail moves side to side
+--*initialTailOffset:	how much to offset the tails animation initially. If you have multiple tails I reccomend using this to slightly offset each. so tail 1 offset by 0, tail 2 offset by 0.5, etc. set 0 to ignore
+--*tailStiff:			how stiff the tails are
+--*tailBounce:			how bouncy the tails are
+
+function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailYSpeed, tailXSpeed, initialTailOffset, tailStiff, tailBounce)
+	local intensity = intensity or 2
+	local tailintensity = tailintensityY or 15
+	local tailintensityx = tailintensityX or 5
+	local tailyspeed = tailYSpeed or 2
+	local tailxspeed = tailXSpeed or 1.2
+	local initialTailOffset = initialTailOffset or 0
+	local tailstiff = tailStiff or .0005
+	local tailbounce = tailBounce or .06
+	local tailrot, tailvel, tailrotx, tailvelx = {}, {}, {}, {}
+    for i = 1, #tailsegs do
+        tailrot[i], tailvel[i], tailrotx[i], tailvelx[i] = 0, 0, 0, 0
+    end
+	
+	local currentbodyrot = 0
+	local oldbodyrot = 0
+	local bodyrotspeed = 0
+	function events.tick()
+		oldbodyrot = currentbodyrot
+		currentbodyrot = player:getBodyYaw()
+		bodyrotspeed = currentbodyrot-oldbodyrot
+		if bodyrotspeed > 20 then bodyrotspeed = 20
+		elseif	bodyrotspeed < -20 then bodyrotspeed = -20 end
+	end
+	
+	function events.render(delta, context)
+		local time = world.getTime() + delta
+		local vel = squapi.getForwardVel()
+		local yvel = squapi.yvel()
+		local svel = squapi.getSideVelocity()
+		local tailintensity = tailintensity-math.abs((yvel*60))-vel*60
+		
+
+		
+		for i, tail in ipairs(tailsegs) do
+			local tailtargety = math.sin((time * tailxspeed)/10 - (i) + initialTailOffset) * tailintensity - tailintensity/2
+			local tailtargetx = math.sin((time * tailyspeed * (squapi.wagStrength))/10 - (i)) * tailintensityx * squapi.wagStrength - tailintensityx/2
+			
+			tailtargetx = tailtargetx + bodyrotspeed*intensity + svel*intensity*40
+			tailtargety = tailtargety + yvel * 100
+
+
+			tailrot[i], tailvel[i] = squapi.bouncetowards(tailrot[i], tailtargety, tailstiff, tailbounce, tailvel[i])
+			tailrotx[i], tailvelx[i] = squapi.bouncetowards(tailrotx[i], tailtargetx, tailstiff, tailbounce, tailvelx[i])
+
+			tail:setRot(tailrot[i], tailrotx[i], 0)
+		end
+	end
+	
+end
+
+
 
 --BOUNCY EARS
 --guide:(note if it has a * that means you can leave it blank to use reccomended settings)
 -- element: 		the ear element that you want to affect(models.[modelname].path)
 -- *element2: 		the second element you'd like to use(second ear), set to nil or leave empty to ignore
 -- *doearflick:		reccomended true. This adds the random chance for the ears to do a "flick" animation, set to false to disable.
+-- *earflickchance:	how rare a flick should be. high values mean less liklihood, low values mean high liklihood.(200 reccomended)
 -- *rangemultiplier at normal state of 1 the ears rotate from -90 to 90, this range will be multiplied by this, so a value of 0.5 would half the range
 -- *earoffset:		how the ears are normally offset. set to 0 for them to normally point up, or set to 45 to have the ears be angled by 45 normally.
 -- *bendstrength: 	how strong the ears bend when you move(jump, fall, run, etc.)
 -- *earstiffness: 	how stiff the ears movement is(0-1)
 -- *earbounce: 		how bouncy the ears are(0-1)
 
-function squapi.ear(element, element2, doearflick, rangemultiplier, earoffset, bendstrength, earstiffness, earbounce)
-	local doearflick = doearflick or true
+function squapi.ear(element, element2, doearflick, earflickchance, rangemultiplier, earoffset, bendstrength, earstiffness, earbounce)
+	if doearflick == nil then doearflick = true end
+	local earflickchance = earflickchance or 200
 	local element2 = element2 or nil
 	local bendstrength = bendstrength or 2
 	local earstiffness = earstiffness or 0.025
 	local earbounce = earbounce or 0.1
 	local earoffset = earoffset or 0
-	local rangemultiplier = rangemultiplier or 0
+	local rangemultiplier = rangemultiplier or 1
 	
-	squapi.eary = squapi.bounceObject:new()
-	squapi.earx = squapi.bounceObject:new()
-	squapi.earx2 = squapi.bounceObject:new()
+	local eary = squapi.bounceObject:new()
+	local earx = squapi.bounceObject:new()
+	local earx2 = squapi.bounceObject:new()
 	
 	local oldpose = "STANDING"
 	function events.render(delta, context)
-		local vel = player:getVelocity():dot((player:getLookDir().x_z):normalize())
-		local yvel = player:getVelocity()[2]
-		local headrot = vanilla_model.HEAD:getOriginRot()
-		headrot = squapi.exorcise(headrot)
+		local vel = squapi.getForwardVel()
+		local yvel = squapi.yvel()
+		local svel = squapi.getSideVelocity()
+		local headrot = (vanilla_model.HEAD:getOriginRot()+180)%360-180
 		
 		local bend = bendstrength
 		if headrot[1] < -22.5 then bend = -bend end
@@ -142,33 +226,35 @@ function squapi.ear(element, element2, doearflick, rangemultiplier, earoffset, b
 		--moves when player crouches
 		local pose = player:getPose()
 		if pose == "CROUCHING" and oldpose == "STANDING" then
-			squapi.eary.vel = squapi.eary.vel + 10
+			eary.vel = eary.vel + 10
 		elseif pose == "STANDING" and oldpose == "CROUCHING" then
-			squapi.eary.vel = squapi.eary.vel - 10
+			eary.vel = eary.vel - 10
 		end
 		oldpose = pose
 		
 		--y vel change
-		squapi.eary.vel = squapi.eary.vel + yvel * bend
+		eary.vel = eary.vel + yvel * bend
 		--x vel change
-		squapi.eary.vel = squapi.eary.vel + vel * bend * 1.5
+		eary.vel = eary.vel + vel * bend * 1.5
 
 		if doearflick then
-			if math.random(0, 200) == 1 then
+			if math.random(0, earflickchance) == 1 then
 				if math.random(0, 1) == 1 then
-					squapi.earx.vel = squapi.earx.vel + 50
+					earx.vel = earx.vel + 50
 				else
-					squapi.earx2.vel = squapi.earx2.vel - 50
+					vel = earx2.vel - 50
 				end
 			end
 		end
-		local rot1 = squapi.eary:doBounce(headrot[1] * rangemultiplier, earstiffness, earbounce)
-		local rot2 = squapi.earx:doBounce(headrot[2] * rangemultiplier, earstiffness, earbounce)
-		local rot2b = squapi.earx2:doBounce(headrot[2] * rangemultiplier, earstiffness, earbounce)
-		local rot3 = rot2/3
-		local rot3b = rot2b/3
-		element:setOffsetRot(rot1 + earoffset, rot2/4, rot3)
 
+
+		local rot1 = eary:doBounce(headrot[1] * rangemultiplier, earstiffness, earbounce)
+		local rot2 = earx:doBounce(headrot[2] * rangemultiplier - svel*400*bendstrength, earstiffness, earbounce)
+		local rot2b = earx2:doBounce(headrot[2] * rangemultiplier - svel*400*bendstrength, earstiffness, earbounce)
+		local rot3 = rot2/4
+		local rot3b = rot2b/4
+
+		element:setOffsetRot(rot1 + earoffset, rot2/4, rot3)
 		if element2 ~= nil then 
 			element2:setOffsetRot(rot1 + earoffset, rot2b/4, rot3b) 
 		end
@@ -192,8 +278,8 @@ function squapi.bewb(element, doidle, bendability, stiff, bounce)
 
 	local oldpose = "STANDING"
 	function events.Render(delta, context)
-		local vel = player:getVelocity():dot((player:getLookDir().x_z):normalize())
-		local yvel = player:getVelocity()[2]
+		local vel = squapi.getForwardVel()
+		local yvel = squapi.yvel()
 		local worldtime = world.getTime() + delta
 
 		if doidle then target = math.sin(worldtime/8)*2*bendability end
@@ -260,7 +346,7 @@ end
 function squapi.centuarPhysics(centaurbody, frontlegs, backlegs)
 	squapi.cent = squapi.bounceObject:new()
 	function events.render(delta, context)
-		local yvel = player:getVelocity()[2]
+		local yvel = squapi.yvel()
 		if player:isClimbing() then
 	
 		elseif pose == "FALL_FLYING" then
@@ -269,16 +355,27 @@ function squapi.centuarPhysics(centaurbody, frontlegs, backlegs)
 			backlegs:setRot(squapi.cent.pos*1.5, 0, 0)
 			frontlegs:setRot(-squapi.cent.pos*3.5, 0, 0)
 		end
-		squapi.cent:doBounce(yvel * 40, 0.01, .2)
+		local target = yvel * 40
+		if target < -30 then target = -30 end
+		squapi.cent:doBounce(target, 0.01, .2)
 	end
 end
 
-function squapi.getSpeed()
+-- USEFUL CALLS ------------------------------------------------------------------------------------------
 
+-- returns how fast the player moves forward, negative means backward
+function squapi.getForwardVel()
+	return player:getVelocity():dot((player:getLookDir().x_z):normalize())
 end
 
-function squapi.tail()
+-- returns y velocity
+function squapi.yvel()
+	return player:getVelocity()[2]
+end
 
+-- returns how fast player moves sideways, negative means left
+function squapi.getSideVelocity()
+	return player:getVelocity():dot((player:getLookDir().z_x):normalize())
 end
 
 
@@ -286,30 +383,6 @@ end
 -----------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------
-
-
--- Repairs incorrect head rotations
-function squapi.exorcise(headrot)
-	-- prevents demonic possesion
-	while(headrot[2] > 90)
-	do
-		headrot[2] = headrot[2] - 360
-	end
-	while(headrot[2] < -90)
-	do
-		headrot[2] = headrot[2] + 360
-	end
-
-	while(headrot[1] > 100)
-	do
-		headrot[1] = headrot[1] - 360
-	end
-	while(headrot[1] < -100)
-	do
-		headrot[1] = headrot[1] + 360
-	end
-	return headrot
-end
 
 -- Linear graph stuff
 function squapi.lineargraph(x1, y1, x2, y2, t)
@@ -348,16 +421,6 @@ function squapi.bounceObject:doBounce(target, stiff, bounce)
 	return self.pos
 end
 
-
-
---THE JUNKYARD. Old, unfinished, or scrapped stuff. Don't use these, but you can climb around I guess
------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------
-
-
-
---LEGACY FOR OLDER STUFF. USE bounceObject INSTEAD
 --1: dif is the distance between current and target
 --2: lower vals of stiff mean that it is slower(lags behind more) 
 --   This means slower acceleration. This acceleration is then added to vel.
@@ -379,6 +442,35 @@ function squapi.bouncetowards(current, target, stiff, bounce, vel)
 	return current, vel
 end
 
+--THE JUNKYARD. Old, unfinished, or scrapped stuff. Don't use these, but you can climb around I guess
+-----------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------
+
+
+-- Repairs incorrect head rotations
+function squapi.exorcise(headrot)
+	-- prevents demonic possesion
+	while(headrot[2] > 90)
+	do
+		headrot[2] = headrot[2] - 360
+	end
+	while(headrot[2] < -90)
+	do
+		headrot[2] = headrot[2] + 360
+	end
+
+	while(headrot[1] > 100)
+	do
+		headrot[1] = headrot[1] - 360
+	end
+	while(headrot[1] < -100)
+	do
+		headrot[1] = headrot[1] + 360
+	end
+	return headrot
+end
+
 
 -- How to use
 -- inside of events.render(delta, context) is where this function goes(squapi.earhysics())
@@ -395,9 +487,7 @@ end
 function squapi.earphysics(element, earvel1, earvel2, bendstrength, earstiffness, earbounce)
 	local vel = player:getVelocity():dot((player:getLookDir().x_z):normalize())
 	local yvel = player:getVelocity()[2]
-	local headrot = vanilla_model.HEAD:getOriginRot()
-	
-	headrot = squapi.exorcise(headrot)
+	local headrot = (vanilla_model.HEAD:getOriginRot()+180)%360-180
 
 	earrot[1], earvel1 = squapi.bouncetowards(earrot[1], headrot[1], earstiffness, earbounce, earvel1)
 	earrot[2], earvel2 = squapi.bouncetowards(earrot[2], headrot[2], earstiffness, earbounce, earvel2)
@@ -415,21 +505,6 @@ function squapi.earphysics(element, earvel1, earvel2, bendstrength, earstiffness
 	element:setRot(earrot[1] + 45, earrot[2]/4, earrot[3])
 	return earvel1, earvel2
 end
-
---currently broken
-local function toparabola(first, mid, last, X)
-
-    local denom = (first.x - mid.x) * (first.x - last.x) * (mid.x - last.x)
-    local a = (last.x * (mid.y - first.y) + mid.x * (first.y - last.y) + first.x * (last.y - mid.y)) / denom
-    local b = (last.x^2 * (first.y - mid.y) + mid.x^2 * (last.y - first.y) + first.x^2 * (mid.y - last.y)) / denom
-    local c = (mid.x * last.x * (mid.x - last.x) * first.y + last.x * first.x * (last.x - first.x) * mid.y + first.x * mid.x * (first.x - mid.x) * last.y) / denom
-
-	
-	
-    return a * X^2 + b * X + c
-end
-
-
 
 
 
