@@ -226,12 +226,12 @@ function squapi.ear(element, element2, doearflick, earflickchance, rangemultipli
 		--moves when player crouches
 		local pose = player:getPose()
 		if pose == "CROUCHING" and oldpose == "STANDING" then
-			eary.vel = eary.vel + 10
+			eary.vel = eary.vel + 3 * bendstrength
 		elseif pose == "STANDING" and oldpose == "CROUCHING" then
-			eary.vel = eary.vel - 10
+			eary.vel = eary.vel - 3 * bendstrength
 		end
 		oldpose = pose
-		
+
 		--y vel change
 		eary.vel = eary.vel + yvel * bend
 		--x vel change
@@ -249,8 +249,8 @@ function squapi.ear(element, element2, doearflick, earflickchance, rangemultipli
 
 
 		local rot1 = eary:doBounce(headrot[1] * rangemultiplier, earstiffness, earbounce)
-		local rot2 = earx:doBounce(headrot[2] * rangemultiplier - svel*400*bendstrength, earstiffness, earbounce)
-		local rot2b = earx2:doBounce(headrot[2] * rangemultiplier - svel*400*bendstrength, earstiffness, earbounce)
+		local rot2 = earx:doBounce(headrot[2] * rangemultiplier - svel*150*bendstrength, earstiffness, earbounce)
+		local rot2b = earx2:doBounce(headrot[2] * rangemultiplier - svel*150*bendstrength, earstiffness, earbounce)
 		local rot3 = rot2/4
 		local rot3b = rot2b/4
 
