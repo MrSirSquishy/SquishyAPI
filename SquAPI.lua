@@ -96,9 +96,11 @@ function squapi.eye(element, leftdistance, rightdistance, updistance, downdistan
 	
 	function events.render(delta, context)
 		local headrot = (vanilla_model.HEAD:getOriginRot()+180)%360-180
-
+		if headrot[2] > 50 then headrot[2] = 50 end
+		if headrot[2] < -50 then headrot[2] = -50 end
 		local x = -squapi.parabolagraph(-50, -left, 0,0, 50, right, headrot[2])
 		local y = squapi.parabolagraph(-90, -down, 0,0, 90, up, headrot[1])
+		
 		if switchvalues then
 			element:setPos(0,y,-x)
 		else
@@ -130,23 +132,32 @@ end
 --*tailintensityX:		how much the tail moves side to side
 --*tailYSpeed:			how fast the tail moves up and down
 --*tailXSpeed:			how fast the tail moves side to side
+--*tailVelBend:			how much the tail bends when you move forward/back. positive values bend up, negative values bend down.
 --*initialTailOffset:	how much to offset the tails animation initially. If you have multiple tails I reccomend using this to slightly offset each. so tail 1 offset by 0, tail 2 offset by 0.5, etc. set 0 to ignore
 --*segOffsetMultipler:	how much each segment is offset from the last. 1 is reccomended.
 --*tailStiff:			how stiff the tails are
 --*tailBounce:			how bouncy the tails are
+--*downLimit:			the max distance the tail will bend down
+--*upLimit:				the max distance the tail will bend up
 
-function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailYSpeed, tailXSpeed, initialTailOffset, segOffsetMultipler, tailStiff, tailBounce)
+--reccomended function:
+--squapi.tails(tailsegs, 2, 15, 5, 2, 1.2, 0, 0, 1, .0005, .06, nil, nil)
+function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailYSpeed, tailXSpeed, tailVelBend, initialTailOffset, segOffsetMultipler, tailStiff, tailBounce, downLimit, upLimit)
 	local intensity = intensity or 2
 	local tailintensity = tailintensityY or 15
 	local tailintensityx = tailintensityX or 5
 	local tailyspeed = tailYSpeed or 2
 	local tailxspeed = tailXSpeed or 1.2
+	local tailvelbend = tailVelBend or 0
 	local initialTailOffset = initialTailOffset or 0
-	local tailstiff = tailStiff or .0005
-	local tailbounce = tailBounce or .06
+	local tailstiff = tailStiff or .005
+	local tailbounce = tailBounce or .05
 	local tailrot, tailvel, tailrotx, tailvelx = {}, {}, {}, {}
 	local segoffsetmultipler = segOffsetMultipler or 1
-    for i = 1, #tailsegs do
+	local downLimit = downLimit or 10
+	local upLimit = upLimit or 40
+    
+	for i = 1, #tailsegs do
         tailrot[i], tailvel[i], tailrotx[i], tailvelx[i] = 0, 0, 0, 0
     end
 	
@@ -167,16 +178,21 @@ function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailY
 		local yvel = squapi.yvel()
 		local svel = squapi.getSideVelocity()
 		local tailintensity = tailintensity-math.abs((yvel*60))-vel*60
-		
 
 		
 		for i, tail in ipairs(tailsegs) do
 			local tailtargety = math.sin((time * tailxspeed)/10 - (i * segoffsetmultipler) + initialTailOffset) * tailintensity
 			local tailtargetx = math.sin((time * tailyspeed * (squapi.wagStrength))/10 - (i)) * tailintensityx * squapi.wagStrength
-			
-			tailtargetx = tailtargetx + bodyrotspeed*intensity + svel*intensity*40
-			tailtargety = tailtargety + yvel * 40 * intensity
 
+			tailtargetx = tailtargetx + bodyrotspeed*intensity*0.5-- + svel*intensity*40
+			tailtargety = tailtargety + yvel * 10 * intensity - vel*intensity*50*tailvelbend
+			
+			if downLimit ~= nil then
+				if tailtargety > downLimit then tailtargety = downLimit end
+			end
+			if upLimit ~= nil then
+				if tailtargety < -upLimit then tailtargety = -upLimit end
+			end
 
 			tailrot[i], tailvel[i] = squapi.bouncetowards(tailrot[i], tailtargety, tailstiff, tailbounce, tailvel[i])
 			tailrotx[i], tailvelx[i] = squapi.bouncetowards(tailrotx[i], tailtargetx, tailstiff, tailbounce, tailvelx[i])
