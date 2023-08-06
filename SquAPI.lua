@@ -131,10 +131,11 @@ end
 --*tailYSpeed:			how fast the tail moves up and down
 --*tailXSpeed:			how fast the tail moves side to side
 --*initialTailOffset:	how much to offset the tails animation initially. If you have multiple tails I reccomend using this to slightly offset each. so tail 1 offset by 0, tail 2 offset by 0.5, etc. set 0 to ignore
+--*segOffsetMultipler:	how much each segment is offset from the last. 1 is reccomended.
 --*tailStiff:			how stiff the tails are
 --*tailBounce:			how bouncy the tails are
 
-function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailYSpeed, tailXSpeed, initialTailOffset, tailStiff, tailBounce)
+function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailYSpeed, tailXSpeed, initialTailOffset, segOffsetMultipler, tailStiff, tailBounce)
 	local intensity = intensity or 2
 	local tailintensity = tailintensityY or 15
 	local tailintensityx = tailintensityX or 5
@@ -144,6 +145,7 @@ function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailY
 	local tailstiff = tailStiff or .0005
 	local tailbounce = tailBounce or .06
 	local tailrot, tailvel, tailrotx, tailvelx = {}, {}, {}, {}
+	local segoffsetmultipler = segOffsetMultipler or 1
     for i = 1, #tailsegs do
         tailrot[i], tailvel[i], tailrotx[i], tailvelx[i] = 0, 0, 0, 0
     end
@@ -169,11 +171,11 @@ function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailY
 
 		
 		for i, tail in ipairs(tailsegs) do
-			local tailtargety = math.sin((time * tailxspeed)/10 - (i) + initialTailOffset) * tailintensity - tailintensity/2
-			local tailtargetx = math.sin((time * tailyspeed * (squapi.wagStrength))/10 - (i)) * tailintensityx * squapi.wagStrength - tailintensityx/2
+			local tailtargety = math.sin((time * tailxspeed)/10 - (i * segoffsetmultipler) + initialTailOffset) * tailintensity
+			local tailtargetx = math.sin((time * tailyspeed * (squapi.wagStrength))/10 - (i)) * tailintensityx * squapi.wagStrength
 			
 			tailtargetx = tailtargetx + bodyrotspeed*intensity + svel*intensity*40
-			tailtargety = tailtargety + yvel * 100
+			tailtargety = tailtargety + yvel * 40 * intensity
 
 
 			tailrot[i], tailvel[i] = squapi.bouncetowards(tailrot[i], tailtargety, tailstiff, tailbounce, tailvel[i])
@@ -509,4 +511,3 @@ end
 
 
 return squapi
-
