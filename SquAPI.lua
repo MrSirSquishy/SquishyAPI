@@ -181,7 +181,7 @@ function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailY
 			tailrot[i], tailvel[i] = squapi.bouncetowards(tailrot[i], tailtargety, tailstiff, tailbounce, tailvel[i])
 			tailrotx[i], tailvelx[i] = squapi.bouncetowards(tailrotx[i], tailtargetx, tailstiff, tailbounce, tailvelx[i])
 
-			tail:setRot(tailrot[i], tailrotx[i], 0)
+			tail:setOffsetRot(tailrot[i], tailrotx[i], 0)
 		end
 	end
 	
