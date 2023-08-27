@@ -10,7 +10,7 @@
 -- Author: Squishy
 -- Discord tag: mrsirsquishy
 
--- Version: 0.18
+-- Version: 0.195
 -- Legal: Do not Redistribute without explicit permission.
 
 -- Don't be afraid to ask me for help, be afraid of not giving me enough info to help
@@ -33,7 +33,27 @@ squapi.eyeScale = 1
 --how much the tails wag. increase this value to make the tails waggier. good for emotes.
 squapi.wagStrength = 1
 
+--CROUCH ANIMATION
 
+function squapi.crouch(crouch, uncrouch) 
+	local oldstate = "STANDING"
+	function events.render()
+		local pose = player:getPose()
+		if pose == "CROUCHING" then
+			if uncrouch ~= nil then
+				uncrouch:stop()
+			end
+			crouch:play()
+		elseif oldstate == "CROUCHING" then
+			crouch:stop()
+			if uncrouch ~= nil then
+				uncrouch:play()
+			end
+		end
+		
+		oldstate = pose
+	end
+end
 
 -- SMOOTH HEAD
 -- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
@@ -101,6 +121,12 @@ function squapi.eye(element, leftdistance, rightdistance, updistance, downdistan
 		local x = -squapi.parabolagraph(-50, -left, 0,0, 50, right, headrot[2])
 		local y = squapi.parabolagraph(-90, -down, 0,0, 90, up, headrot[1])
 		
+		--prevents any eye shenanigans
+		if x > left then x = left end
+		if x < -right then x = -right end
+		if y > up then y = up end
+		if y < -down then y = down end
+
 		if switchvalues then
 			element:setPos(0,y,-x)
 		else
@@ -117,7 +143,7 @@ end
 function squapi.blink(animation, chancemultipler)
 	local blinkchancemultipler = chancemultipler or 1
 	function events.render(delta, context)
-		if math.random(0, 200) == 1 and animation:isStopped() and squapi.doBlink then
+		if math.random(0, 200 * blinkchancemultipler) == 1 and animation:isStopped() and squapi.doBlink then
 			animation:play()
 		end
 	end	
@@ -137,12 +163,13 @@ end
 --*segOffsetMultipler:	how much each segment is offset from the last. 1 is reccomended.
 --*tailStiff:			how stiff the tails are
 --*tailBounce:			how bouncy the tails are
+--*tailFlyOffset		what rotation the tail should have when flying(elytra or riptide) normally 0. Example would be if your tail sticks out when flying, set to 75 to rotate the tail 75 deg down.
 --*downLimit:			the max distance the tail will bend down
 --*upLimit:				the max distance the tail will bend up
 
 --reccomended function:
---squapi.tails(tailsegs, 2, 15, 5, 2, 1.2, 0, 0, 1, .0005, .06, nil, nil)
-function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailYSpeed, tailXSpeed, tailVelBend, initialTailOffset, segOffsetMultipler, tailStiff, tailBounce, downLimit, upLimit)
+--squapi.tails(tailsegs, 2, 15, 5, 2, 1.2, 0, 0, 1, .0005, .06, 0, nil, nil)
+function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailYSpeed, tailXSpeed, tailVelBend, initialTailOffset, segOffsetMultipler, tailStiff, tailBounce, tailFlyOffset, downLimit, upLimit)
 	local intensity = intensity or 2
 	local tailintensity = tailintensityY or 15
 	local tailintensityx = tailintensityX or 5
@@ -152,6 +179,7 @@ function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailY
 	local initialTailOffset = initialTailOffset or 0
 	local tailstiff = tailStiff or .005
 	local tailbounce = tailBounce or .05
+	local tailflyoffset = tailFlyOffset or 0
 	local tailrot, tailvel, tailrotx, tailvelx = {}, {}, {}, {}
 	local segoffsetmultipler = segOffsetMultipler or 1
 	local downLimit = downLimit or 10
@@ -176,17 +204,19 @@ function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailY
 		local time = world.getTime() + delta
 		local vel = squapi.getForwardVel()
 		local yvel = squapi.yvel()
-		local svel = squapi.getSideVelocity()
+		--local svel = squapi.getSideVelocity()
 		local tailintensity = tailintensity-math.abs((yvel*60))-vel*60
-
-		
+		local pose = player:getPose()
 		for i, tail in ipairs(tailsegs) do
 			local tailtargety = math.sin((time * tailxspeed)/10 - (i * segoffsetmultipler) + initialTailOffset) * tailintensity
 			local tailtargetx = math.sin((time * tailyspeed * (squapi.wagStrength))/10 - (i)) * tailintensityx * squapi.wagStrength
 
 			tailtargetx = tailtargetx + bodyrotspeed*intensity*0.5-- + svel*intensity*40
-			tailtargety = tailtargety + yvel * 10 * intensity - vel*intensity*50*tailvelbend
+			tailtargety = tailtargety + yvel * 20 * intensity - vel*intensity*50*tailvelbend
 			
+			
+			
+
 			if downLimit ~= nil then
 				if tailtargety > downLimit then tailtargety = downLimit end
 			end
@@ -194,10 +224,18 @@ function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailY
 				if tailtargety < -upLimit then tailtargety = -upLimit end
 			end
 
+			if i == 1 then
+				if pose == "FALL_FLYING" or pose == "SWIMMING" or player:riptideSpinning() then
+					tailtargety = tailflyoffset
+				end	
+			end
+
 			tailrot[i], tailvel[i] = squapi.bouncetowards(tailrot[i], tailtargety, tailstiff, tailbounce, tailvel[i])
 			tailrotx[i], tailvelx[i] = squapi.bouncetowards(tailrotx[i], tailtargetx, tailstiff, tailbounce, tailvelx[i])
-
-			tail:setOffsetRot(tailrot[i], tailrotx[i], 0)
+			
+			if pose ~= "SLEEPING" then 
+				tail:setOffsetRot(tailrot[i], tailrotx[i], 0)
+			end
 		end
 	end
 	
@@ -363,11 +401,16 @@ end
 -- backlegs: 	the group that contains both back legs
 function squapi.centuarPhysics(centaurbody, frontlegs, backlegs)
 	squapi.cent = squapi.bounceObject:new()
+	
 	function events.render(delta, context)
 		local yvel = squapi.yvel()
-		if player:isClimbing() then
-	
-		elseif pose == "FALL_FLYING" then
+		local pose = player:getPose()
+		
+		if pose == "FALL_FLYING" or pose == "SWIMMING" or (player:isClimbing() and not player:isOnGround()) or player:riptideSpinning() then
+			
+			centaurbody:setRot(80, 0, 0)
+			backlegs:setRot(-50, 0, 0)
+			frontlegs:setRot(-50, 0, 0)
 		else	
 			centaurbody:setRot(squapi.cent.pos, 0, 0)
 			backlegs:setRot(squapi.cent.pos*1.5, 0, 0)
