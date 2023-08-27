@@ -34,6 +34,9 @@ squapi.eyeScale = 1
 squapi.wagStrength = 1
 
 --CROUCH ANIMATION
+-- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
+-- crouch:		the animation to play when you crouch. Make sure this animation is on "hold on last frame" and override. 
+-- *uncrouch:	the animation to play when you uncrouch. make sure to set to "play once" and set to override. If it's just a pose with no actual animation, than you should leave this blank.
 
 function squapi.crouch(crouch, uncrouch) 
 	local oldstate = "STANDING"
@@ -58,7 +61,7 @@ end
 -- SMOOTH HEAD
 -- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
 -- element: 			the head element that you wish to effect
--- keeporiginalheadpos: when true(automatically true) the heads position will change like normally, set to false to disable.
+-- *keeporiginalheadpos: when true(automatically true) the heads position will change like normally, set to false to disable.
 -- IMPORTANT: for this to work you need to remove the "Head" element, as if it is there it will continue to use the minecraft head rotation. renaming it to "head" will work fine.
 function squapi.smoothHead(element, keeporiginalheadpos)
 	if keeporiginalheadpos == nil then keeporiginalheadpos = true end
@@ -79,7 +82,7 @@ end
 -- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
 -- element:	 			the head element
 -- element2: 			the neck element
--- keeporiginalheadpos: when true(automatically true) the heads position will change like normally, set to false to disable.
+-- *keeporiginalheadpos: when true(automatically true) the heads position will change like normally, set to false to disable.
 function squapi.smoothHeadNeck(element, element2, keeporiginalheadpos)
 	if keeporiginalheadpos == nil then keeporiginalheadpos = true end
 	local mainheadrot = vec(0, 0, 0)
