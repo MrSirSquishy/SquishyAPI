@@ -19,6 +19,7 @@ Discord tag: mrsirsquishy
 - Animated Texture script:A simplified script for animated textures so you don't have to give yourself a headache.
 - FP hand adjust:         A simple script that just moves the first person hand.
 - Centaur Body Physics:   Have a centaur body? With some correct pivot stucturing you can get your centaur body to move accurately when jumping and falling.
+- Crouch Animation:       A simple script that can either have a specific crouch pose, or better yet have an animation for crouching and uncrouching.
 
 <h4>More advanced features if you know what you're doing:</h4>
 
