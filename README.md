@@ -1,6 +1,8 @@
 # SquishyAPI
 
 Discord tag: mrsirsquishy
+Everything me: 
+https://mrsirsquishy.notion.site/mrsirsquishy/Squishy-e825d3a72f29453799f6970e7d0dd107#328c79ebd3324f14be7cd7c743cb99a3
 
 <h5>All Rights Reserved. Do not Redistribute without explicit permission.</h5>
 
