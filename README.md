@@ -7,7 +7,8 @@ https://mrsirsquishy.notion.site/mrsirsquishy/Squishy-e825d3a72f29453799f6970e7d
 <h5>All Rights Reserved. Do not Redistribute without explicit permission.</h5>
 
 
-<p>No full guides yet, but some descriptions exist within the API which should explain all that you need, and you can directly ask me for assistance if needed.
+Documentation:
+https://mrsirsquishy.notion.site/Squishy-API-Guide-3e72692e93a248b5bd88353c96d8e6c5
 
 <h3>Current Feature List:</h3>
 
