@@ -33,15 +33,122 @@ squapi.eyeScale = 1
 --how much the tails wag. increase this value to make the tails waggier. good for emotes.
 squapi.wagStrength = 1
 
+--detects if the bounce function is enabled, doesn't typically need to be modified
+squapi.doBounce = false
+
+--altering this value will add to the head rot if smooth Head is enabled
+squapi.smoothHeadOffset = vec(0,0,0)
+
+--enable/disable floating point
+squapi.floatPointEnabled = true
+
+
+--FLOATING POINT ITEM
+-- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
+-- element: the element you are moving. Make sure that your element has
+
+function squapi.floatPoint(element, xoffset, yoffset, zoffset, ymin, maxradius)
+	local point = {
+		squapi.bounceObject:new(), 
+		squapi.bounceObject:new(), 
+		squapi.bounceObject:new(), 
+		squapi.bounceObject:new()
+	}
+	local stiff = .02
+	local bounce = .0005
+
+	local rotstiff = .0005
+	local rotbounce =  .05
+
+	local ymin = ymin or 15
+	local maxradius = maxradius or nil
+	local init = true
+
+	local x = xoffset or 0
+	local y = yoffset or 0
+	local z = zoffset or 0
+
+	function events.render(delta, context)
+		if init then
+			point[1].pos = player:getPos()[1]*16 + x
+			point[2].pos = player:getPos()[2]*16 + y
+			point[3].pos = player:getPos()[3]*16 + z
+			point[4].pos = -player:getBodyYaw()-180
+
+			init = false
+		end
+		
+		local targetx = player:getPos()[1]*16
+		local targety = player:getPos()[2]*16
+		local targetz = player:getPos()[3]*16
+		local targetrot = -player:getBodyYaw()-180
+		
+		--avoids going to low/getting to far based on radius and miny
+		stiff = .02
+		bounce = .0005
+		if point[2].pos-player:getPos()[2]*16 < -ymin then
+			stiff = 0.035
+			bounce = .01
+		elseif maxradius ~= nil then
+			if  
+				point[1].pos-player:getPos()[1]*16 < -maxradius 
+				or point[1].pos-player:getPos()[1]*16 > maxradius  
+				or point[2].pos-player:getPos()[2]*16 < -maxradius 
+				or point[2].pos-player:getPos()[2]*16 > maxradius 
+				or point[3].pos-player:getPos()[3]*16 < -maxradius 
+				or point[3].pos-player:getPos()[3]*16 > maxradius 
+				then
+					
+					stiff = 0.035
+					bounce = .01		
+			end
+		end
+		
+		--local truepos = element:getPos() - player:getPos()*16
+		if squapi.floatPointEnabled then
+			element:setPivot(-x,-y,-z)
+			element:setPos(
+				point[1]:doBounce(targetx, bounce, stiff) + x,
+				point[2]:doBounce(targety, bounce, stiff) + y, 
+				point[3]:doBounce(targetz, bounce, stiff) + z
+			)
+			element:setRot(0, point[4]:doBounce(targetrot, rotstiff, rotbounce), 0)
+		end
+	end
+end
+
+
+
+--BOUNCE WALK
+-- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
+-- model:			the path to your model element. Most cases, if you're model is named "model", than it'd be models.model (replace model with the name of your model) 
+-- *bounceMultipler:normally 1, this multiples how much the bounce occurs. values greater than 1 will increase bounce, and values less than 1 will decrease bounce.
+function squapi.bouncewalk(model, bounceMultipler)
+	squapi.doBounce = true
+	bouncemultipler = bounceMultipler or 1
+	function events.render(delta, context)
+		local pose = player:getPose()
+		local bounce = bounceMultipler
+		if pose == "CROUCHING" then
+			bounce = bounce/2
+		end
+		leftlegrot = vanilla_model.LEFT_LEG:getOriginRot()[1]
+		model:setPos(0, math.abs(leftlegrot)/40*bounce, 0)
+	end
+end
+
 --CROUCH ANIMATION
 -- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
 -- crouch:		the animation to play when you crouch. Make sure this animation is on "hold on last frame" and override. 
--- *uncrouch:	the animation to play when you uncrouch. make sure to set to "play once" and set to override. If it's just a pose with no actual animation, than you should leave this blank.
-
-function squapi.crouch(crouch, uncrouch) 
+-- *uncrouch:	the animation to play when you uncrouch. make sure to set to "play once" and set to override. If it's just a pose with no actual animation, than you should leave this blank or set to nil
+-- *crawl:		same as crouch but for crawling
+-- *uncrawl:	same as uncrouch but for crawling
+function squapi.crouch(crouch, uncrouch, crawl, uncrawl) 
 	local oldstate = "STANDING"
 	function events.render()
 		local pose = player:getPose()
+		if pose == "SWIMMING" and not player:isInWater() then pose = "CRAWLING" end
+
 		if pose == "CROUCHING" then
 			if uncrouch ~= nil then
 				uncrouch:stop()
@@ -51,6 +158,18 @@ function squapi.crouch(crouch, uncrouch)
 			crouch:stop()
 			if uncrouch ~= nil then
 				uncrouch:play()
+			end
+		elseif crawl ~= nil then
+			if pose == "CRAWLING" then
+				if uncrawl ~= nil then
+					uncrawl:stop()
+				end
+				crawl:play()
+			elseif oldstate == "CRAWLING" then
+				crawl:stop()
+				if uncrawl ~= nil then
+					uncrawl:play()
+				end
 			end
 		end
 		
@@ -62,19 +181,33 @@ end
 -- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
 -- element: 			the head element that you wish to effect
 -- *keeporiginalheadpos: when true(automatically true) the heads position will change like normally, set to false to disable.
--- IMPORTANT: for this to work you need to remove the "Head" element, as if it is there it will continue to use the minecraft head rotation. renaming it to "head" will work fine.
-function squapi.smoothHead(element, keeporiginalheadpos)
+-- IMPORTANT: for this to work you need to name your head element something other than "Head" - the name "Head" will make it follow vanilla rotations which we don't want, so it is reccomended to rename it to something like "head" instead)
+function squapi.smoothHead(element, tilt, keeporiginalheadpos)
+	tilt = tilt or 2
+	tilt = tilt/5
 	if keeporiginalheadpos == nil then keeporiginalheadpos = true end
 	local mainheadrot = vec(0, 0, 0)
 	function events.render(delta, context)
-		local headrot = (vanilla_model.HEAD:getOriginRot()+180)%360-180
+		local headrot = (vanilla_model.HEAD:getOriginRot()+180 + squapi.smoothHeadOffset)%360-180
 		mainheadrot[1] = mainheadrot[1] + (headrot[1] - mainheadrot[1])/12
 		mainheadrot[2] = mainheadrot[2] + (headrot[2] - mainheadrot[2])/12
-		mainheadrot[3] = mainheadrot[2]/5
+		mainheadrot[3] = mainheadrot[2]*tilt
+		mainheadrot = mainheadrot
 		element:setOffsetRot(mainheadrot)
 		if keeporiginalheadpos then 
 			element:setPos(-vanilla_model.HEAD:getOriginPos()) 
 		end
+		
+		-- Better Combat SquAPI Compatibility created by @jimmyhelp and @foxy2526 on Discord
+		if renderer:isFirstPerson() and context == "RENDER" then
+			element:setVisible(false)
+			-- Set path to head model
+		else
+			element:setVisible(true)
+			-- Set path to head model
+		end
+
+
 	end
 end
 
@@ -87,7 +220,7 @@ function squapi.smoothHeadNeck(element, element2, keeporiginalheadpos)
 	if keeporiginalheadpos == nil then keeporiginalheadpos = true end
 	local mainheadrot = vec(0, 0, 0)
 	function events.render(delta, context)
-		local headrot = (vanilla_model.HEAD:getOriginRot()+180)%360-180
+		local headrot = (vanilla_model.HEAD:getOriginRot()+180 + squapi.smoothHeadNeck)%360-180
 		mainheadrot[1] = mainheadrot[1] + (headrot[1] - mainheadrot[1])/12
 		mainheadrot[2] = mainheadrot[2] + (headrot[2] - mainheadrot[2])/12
 		mainheadrot[3] = mainheadrot[2]/5
@@ -139,6 +272,7 @@ function squapi.eye(element, leftdistance, rightdistance, updistance, downdistan
 	end
 end	
 
+
 --BLINK
 -- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
 -- animation: 			the blink animation to play
@@ -155,7 +289,7 @@ end
 
 --TAIL PHYSICS!!
 --guide:(note if it has a * that means you can leave it blank to use reccomended settings)
---tailsegs:				this is an ARRAY of each element/segment in your tail. for example: local array = {element, element2, etc.}
+--tailsegs:				this is an ARRAY of each element/segment in your tail. for example: local array = {element, element2, etc.} Your array can have only one element if you have only one tail part.
 --*intensity:			how intensly the tail moves when you rotate/move. Reccomend 2
 --*tailintesnityY:		how much the tail moves up and down
 --*tailintensityX:		how much the tail moves side to side
@@ -187,7 +321,13 @@ function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailY
 	local segoffsetmultipler = segOffsetMultipler or 1
 	local downLimit = downLimit or 10
 	local upLimit = upLimit or 40
-    
+
+	--error checker
+	if type(tailsegs) == "ModelPart" then
+		error("You input an element! This function needs a list! Check the documentation if you need more info")
+	end
+	assert(type(tailsegs) == "table", "your tailsegs table seems to to be incorrect")
+	
 	for i = 1, #tailsegs do
         tailrot[i], tailvel[i], tailrotx[i], tailvelx[i] = 0, 0, 0, 0
     end
@@ -208,7 +348,7 @@ function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailY
 		local vel = squapi.getForwardVel()
 		local yvel = squapi.yvel()
 		--local svel = squapi.getSideVelocity()
-		local tailintensity = tailintensity-math.abs((yvel*60))-vel*60
+		local tailintensity = tailintensity/(math.abs((yvel*30))-vel*30 + 1)
 		local pose = player:getPose()
 		for i, tail in ipairs(tailsegs) do
 			local tailtargety = math.sin((time * tailxspeed)/10 - (i * segoffsetmultipler) + initialTailOffset) * tailintensity
@@ -233,8 +373,8 @@ function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailY
 				end	
 			end
 
-			tailrot[i], tailvel[i] = squapi.bouncetowards(tailrot[i], tailtargety, tailstiff, tailbounce, tailvel[i])
-			tailrotx[i], tailvelx[i] = squapi.bouncetowards(tailrotx[i], tailtargetx, tailstiff, tailbounce, tailvelx[i])
+			tailrot[i], tailvel[i] = squapi.bouncetowards(tailrot[i], tailtargety, tailvel[i], tailstiff, tailbounce)
+			tailrotx[i], tailvelx[i] = squapi.bouncetowards(tailrotx[i], tailtargetx, tailvelx[i], tailstiff, tailbounce)
 			
 			if pose ~= "SLEEPING" then 
 				tail:setOffsetRot(tailrot[i], tailrotx[i], 0)
@@ -260,7 +400,7 @@ end
 
 function squapi.ear(element, element2, doearflick, earflickchance, rangemultiplier, earoffset, bendstrength, earstiffness, earbounce)
 	if doearflick == nil then doearflick = true end
-	local earflickchance = earflickchance or 200
+	local earflickchance = earflickchance or 400
 	local element2 = element2 or nil
 	local bendstrength = bendstrength or 2
 	local earstiffness = earstiffness or 0.025
@@ -271,9 +411,15 @@ function squapi.ear(element, element2, doearflick, earflickchance, rangemultipli
 	local eary = squapi.bounceObject:new()
 	local earx = squapi.bounceObject:new()
 	local earx2 = squapi.bounceObject:new()
-	
+	local leftlegrot = 0
 	local oldpose = "STANDING"
 	function events.render(delta, context)
+		local leftlegrot
+		if squapi.doBounce then
+			leftlegrot = vanilla_model.LEFT_LEG:getOriginRot()[1]
+		else
+			leftlegrot = 0
+		end
 		local vel = squapi.getForwardVel()
 		local yvel = squapi.yvel()
 		local svel = squapi.getSideVelocity()
@@ -292,6 +438,7 @@ function squapi.ear(element, element2, doearflick, earflickchance, rangemultipli
 		oldpose = pose
 
 		--y vel change
+	
 		eary.vel = eary.vel + yvel * bend
 		--x vel change
 		eary.vel = eary.vel + vel * bend * 1.5
@@ -301,15 +448,23 @@ function squapi.ear(element, element2, doearflick, earflickchance, rangemultipli
 				if math.random(0, 1) == 1 then
 					earx.vel = earx.vel + 50
 				else
-					vel = earx2.vel - 50
+					earx2.vel = earx2.vel - 50
 				end
 			end
 		end
-
-
-		local rot1 = eary:doBounce(headrot[1] * rangemultiplier, earstiffness, earbounce)
+		
+		local rot1 = eary:doBounce(headrot[1] * rangemultiplier - math.abs(leftlegrot)/8*bendstrength, earstiffness, earbounce)
 		local rot2 = earx:doBounce(headrot[2] * rangemultiplier - svel*150*bendstrength, earstiffness, earbounce)
 		local rot2b = earx2:doBounce(headrot[2] * rangemultiplier - svel*150*bendstrength, earstiffness, earbounce)
+		
+		--prevents chaos ears
+		if rot2 > 90 then rot2 = 90 end
+		if rot2 < -90 then rot2 = -90 end
+		if rot1 > 90 then rot1 = 90 end
+		if rot1 < -90 then rot1 = -90 end
+		if rot2b > 90 then rot2b = 90 end
+		if rot2b < -90 then rot2b = -90 end
+
 		local rot3 = rot2/4
 		local rot3b = rot2b/4
 
@@ -385,15 +540,19 @@ end
 -- *x: 		the x change
 -- *y: 		the y change
 -- *z: 		the z change
-function squapi.setFirstPersonHandPos(element, x, y, z)
+function squapi.setFirstPersonHandPos(element, x, y, z, scale)
 	x = x or 0
 	y = y or 0
 	z = z or 0
+	scalex = scale or 1
 	function events.Render(delta, context)
 		if context == "FIRST_PERSON" then 
 			element:setPos(x, y, z)
+			element:setScale(scale,scale,scale)
 		else 
-			element:setPos(0, 0, 0) end
+			element:setPos(0, 0, 0)
+			element:setScale(1,1,1)
+		end
 	end
 end
 
@@ -468,13 +627,16 @@ function squapi.parabolagraph(x1, y1, x2, y2, x3, y3, t)
 end
 
 --smooth bouncy stuff
+local bounceID = 0
 squapi.bounceObject = {}
-function squapi.bounceObject:new(o)
-	o = o or {}
-	setmetatable(o, self)
-	self.__index = self
-	self.vel = 0
-	self.pos = 0
+squapi.bounceObject.__index = squapi.bounceObject
+function squapi.bounceObject:new()
+	local o = {
+		vel = 0,
+		pos = 0
+	}
+	bounceID = bounceID + 1
+	setmetatable(o, squapi.bounceObject)
 	return o
 end	
 function squapi.bounceObject:doBounce(target, stiff, bounce)
@@ -499,7 +661,10 @@ end
 -- vel: the current velocity of the current value.
 
 -- Returns the new position and new velocity.
-function squapi.bouncetowards(current, target, stiff, bounce, vel)	
+
+function squapi.bouncetowards(current, target, vel, stiff, bounce)
+	local bounce = bounce or 0.05
+	local stiff = stiff or 0.005	
 	local dif = target - current
 	vel = vel + ((dif - vel * stiff) * stiff)
 	current = (current + vel) + (dif * bounce)
@@ -553,8 +718,8 @@ function squapi.earphysics(element, earvel1, earvel2, bendstrength, earstiffness
 	local yvel = player:getVelocity()[2]
 	local headrot = (vanilla_model.HEAD:getOriginRot()+180)%360-180
 
-	earrot[1], earvel1 = squapi.bouncetowards(earrot[1], headrot[1], earstiffness, earbounce, earvel1)
-	earrot[2], earvel2 = squapi.bouncetowards(earrot[2], headrot[2], earstiffness, earbounce, earvel2)
+	earrot[1], earvel1 = squapi.bouncetowards(earrot[1], headrot[1], earvel1, earstiffness, earbounce)
+	earrot[2], earvel2 = squapi.bouncetowards(earrot[2], headrot[2], earvel2, earstiffness, earbounce)
 	earrot[3] = earrot[2]/3
 
 	local bend = bendstrength
