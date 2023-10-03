@@ -43,11 +43,63 @@ squapi.smoothHeadOffset = vec(0,0,0)
 squapi.floatPointEnabled = true
 
 
+-- WALKING AND SPRINTING ANIMATIONS
+
+function squapi.walk(walkanim, runanim)
+	
+	runanim = runanim or nil
+
+	walksmooth = squapi.bounceObject:new()
+	runsmooth = squapi.bounceObject:new()
+
+	walkanim:play()
+	if runanim ~= nil then runanim:play() end
+
+	function events.render(delta, context)
+		
+		local vel = squapi.getForwardVel()
+		if vel > 0.3 then vel = 0.3 end
+
+		walkanim:setBlend(walksmooth:doBounce(vel*4.633, .001, .2))
+		walkanim:setSpeed(walksmooth.pos)
+		
+		if runanim ~= nil then
+			
+			if player:isSprinting() then
+				walkanim:setBlend(0)
+				
+				local target = vel*3.57
+				--prevents wierd issue when looking up
+				if target == 0 then
+					target = 1
+				end
+
+				if runsmooth.pos < 0 then
+					runsmooth.pos = runsmooth.pos * -4
+				end
+				runanim:setBlend(runsmooth:doBounce(target, .001, .2))
+				runanim:setSpeed(runsmooth.pos)
+
+			else
+				runanim:setBlend(runsmooth:doBounce(0, .001, .2))
+				runanim:setSpeed(runsmooth.pos)
+			end
+		end
+
+	end
+end
+
 --FLOATING POINT ITEM
 -- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
--- element: the element you are moving. Make sure that your element has
+-- element: 	the element you are moving. Make sure that your element has
+-- *xoffset: 	where it is positioned from 0 on the x axis
+-- *yoffset: 	where it is positioned from 0 on the y axis
+-- *zoffset: 	where it is positioned from 0 on the z axis
+-- *ymin:	 	how far down the "floor" is; this helps prevent it from clipping into the ground too much(may still clip a bit)
+-- *maxradius	this will limit how far away the object can go. setting to "nil" means no limit
 
 function squapi.floatPoint(element, xoffset, yoffset, zoffset, ymin, maxradius)
+	element:setParentType("WORLD")
 	local point = {
 		squapi.bounceObject:new(), 
 		squapi.bounceObject:new(), 
@@ -174,6 +226,30 @@ function squapi.crouch(crouch, uncrouch, crawl, uncrawl)
 		end
 		
 		oldstate = pose
+	end
+end
+
+-- SMOOTH TORSO MOVEMENT
+-- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
+-- element:				the torso element that you wish to effect. Make sure this group/bone contains all elements attached to the body.
+-- *strengthmultiplier:	normally .4; this controls how strongly the torso moves
+function squapi.torso(element, strengthmultiplier)
+	strengthmultiplier = strengthmultiplier or .5
+	tilt = 0.4
+
+	if keeporiginalheadpos == nil then keeporiginalheadpos = true end
+	local mainheadrot = vec(0, 0, 0)
+	function events.render(delta, context)
+		local headrot = ((vanilla_model.HEAD:getOriginRot()+180 + squapi.smoothHeadOffset)%360-180)*strengthmultiplier
+		mainheadrot[1] = mainheadrot[1] + (headrot[1] - mainheadrot[1])/12
+		mainheadrot[2] = mainheadrot[2] + (headrot[2] - mainheadrot[2])/12
+		mainheadrot[3] = mainheadrot[2]*tilt
+		mainheadrot = mainheadrot
+		element:setOffsetRot(mainheadrot)
+		if keeporiginalheadpos then 
+			element:setPos(-vanilla_model.HEAD:getOriginPos()) 
+		end
+
 	end
 end
 
