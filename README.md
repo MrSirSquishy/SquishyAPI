@@ -1,11 +1,14 @@
 # SquishyAPI
 
 Discord tag: mrsirsquishy
+Everything me: 
+https://mrsirsquishy.notion.site/mrsirsquishy/Squishy-e825d3a72f29453799f6970e7d0dd107#328c79ebd3324f14be7cd7c743cb99a3
 
 <h5>All Rights Reserved. Do not Redistribute without explicit permission.</h5>
 
 
-<p>No full guides yet, but some descriptions exist within the API which should explain all that you need, and you can directly ask me for assistance if needed.
+Documentation:
+https://mrsirsquishy.notion.site/Squishy-API-Guide-3e72692e93a248b5bd88353c96d8e6c5
 
 <h3>Current Feature List:</h3>
 
@@ -19,6 +22,7 @@ Discord tag: mrsirsquishy
 - Animated Texture script:A simplified script for animated textures so you don't have to give yourself a headache.
 - FP hand adjust:         A simple script that just moves the first person hand.
 - Centaur Body Physics:   Have a centaur body? With some correct pivot stucturing you can get your centaur body to move accurately when jumping and falling.
+- Crouch Animation:       A simple script that can either have a specific crouch pose, or better yet have an animation for crouching and uncrouching.
 
 <h4>More advanced features if you know what you're doing:</h4>
 
