@@ -23,6 +23,10 @@ https://mrsirsquishy.notion.site/Squishy-API-Guide-3e72692e93a248b5bd88353c96d8e
 - FP hand adjust:         A simple script that just moves the first person hand.
 - Centaur Body Physics:   Have a centaur body? With some correct pivot stucturing you can get your centaur body to move accurately when jumping and falling.
 - Crouch Animation:       A simple script that can either have a specific crouch pose, or better yet have an animation for crouching and uncrouching.
+- Walk/Run animations:    This allows you to smoothly play walk and run animations without snapping.
+- Floating Points:        These are points that will float to a designated position rather than just follow a players movement. Good for stuff like fairies, pets, miscelanious floating objects, or floaty avatar models. 
+- Bounce Walk:            This will make your avatar slightly bounce when you walk, good for smaller cuter models to make them look like they're hopping around(also affects physics of other objects)
+- Smooth Torso:           This will make your body/torso move smoothly based on where you are looking to make it look like your avatar is bending in the direction
 
 <h4>More advanced features if you know what you're doing:</h4>
 
