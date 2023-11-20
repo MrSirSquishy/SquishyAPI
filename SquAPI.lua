@@ -10,7 +10,7 @@
 -- Author: Squishy
 -- Discord tag: mrsirsquishy
 
--- Version: 2.0.0
+-- Version: 0.2.0
 -- Legal: Do not Redistribute without explicit permission.
 
 -- IMPORTANT FOR NEW USERS!!! READ THIS!!!
@@ -59,6 +59,52 @@ squapi.floatPointEnabled = true
 --the smoothTorso function will enable this automatically, this will basically cancel out the heads movement based on the torsos movement so your head doesn't bend too far.
 squapi.cancelHeadMovement = false
 squapi.torsoOffset = vec(0,0,0)
+
+-- WALKING AND SPRINTING ANIMATIONS
+
+function squapi.walk(walkanim, runanim)
+	
+	runanim = runanim or nil
+
+	walksmooth = squapi.bounceObject:new()
+	runsmooth = squapi.bounceObject:new()
+
+	walkanim:play()
+	if runanim ~= nil then runanim:play() end
+
+	function events.render(delta, context)
+		
+		local vel = squapi.getForwardVel()
+		if vel > 0.3 then vel = 0.3 end
+
+		walkanim:setBlend(walksmooth:doBounce(vel*4.633, .001, .2))
+		walkanim:setSpeed(walksmooth.pos)
+		
+		if runanim ~= nil then
+			
+			if player:isSprinting() then
+				walkanim:setBlend(0)
+				
+				local target = vel*3.57
+				--prevents wierd issue when looking up
+				if target == 0 then
+					target = 1
+				end
+
+				if runsmooth.pos < 0 then
+					runsmooth.pos = runsmooth.pos * -4
+				end
+				runanim:setBlend(runsmooth:doBounce(target, .001, .2))
+				runanim:setSpeed(runsmooth.pos)
+
+			else
+				runanim:setBlend(runsmooth:doBounce(0, .001, .2))
+				runanim:setSpeed(runsmooth.pos)
+			end
+		end
+
+	end
+end
 
 
 --FLOATING POINT ITEM
@@ -208,7 +254,7 @@ end
 -- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
 -- element:				the torso element that you wish to effect. Make sure this group/bone contains all elements attached to the body.
 -- *strengthmultiplier:	normally .4; this controls how strongly the torso moves
-function squapi.torso(element, strengthMultiplier, tilt)
+function squapi.smoothTorso(element, strengthMultiplier, tilt)
 	strengthmultiplier = strengthMultiplier or .5
 	tilt = tilt or 0.4
 	squapi.cancelHeadMovement = true
