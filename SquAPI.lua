@@ -10,7 +10,7 @@
 -- Author: Squishy
 -- Discord tag: mrsirsquishy
 
--- Version: 2.0.0
+-- Version: 0.3.0
 -- Legal: Do not Redistribute without explicit permission.
 
 -- Special Thanks to @jimmyhelp for errors and just generally helping me get things working.
@@ -1087,7 +1087,7 @@ function squapi.eye(element, leftdistance, rightdistance, updistance, downdistan
 		if x > left then x = left end
 		if x < -right then x = -right end
 		if y > up then y = up end
-		if y < -down then y = down end
+		if y < -down then y = -down end
 
 		if switchvalues then
 			element:setPos(0,y,-x)
