@@ -10,8 +10,11 @@
 -- Author: Squishy
 -- Discord tag: mrsirsquishy
 
--- Version: 0.2.0
+-- Version: 2.0.0
 -- Legal: Do not Redistribute without explicit permission.
+
+-- Special Thanks to @jimmyhelp for errors and just generally helping me get things working.
+
 
 -- IMPORTANT FOR NEW USERS!!! READ THIS!!!
 
@@ -53,58 +56,724 @@ squapi.doBounce = false
 --altering this value will add to the head rot if smooth Head is enabled
 squapi.smoothHeadOffset = vec(0,0,0)
 
---enable/disable floating point
-squapi.floatPointEnabled = true
-
 --the smoothTorso function will enable this automatically, this will basically cancel out the heads movement based on the torsos movement so your head doesn't bend too far.
 squapi.cancelHeadMovement = false
 squapi.torsoOffset = vec(0,0,0)
 
--- WALKING AND SPRINTING ANIMATIONS
+--toggle this to enable/disable idle animations
+squapi.doidleanimations = true
 
-function squapi.walk(walkanim, runanim)
+--toggle this variable to enable/disable all squapi animations
+squapi.doAnimations = true
+
+-- ANIMATION PLAYER
+
+
+--[[
+
+This code segment can be copy pasted to make it easier to set up your animations
+
+squapi.animate(
+	nil, --idle
+	nil, --walkanim
+	nil, --reversewalk
+	nil, --runanim
+	nil, --sidewalkleft
+	nil, --sidewalkright
+	nil, --armswingleft
+	nil, --armswingright
+	nil, --holdSwordIdle
+	nil, --holdAxeIdle
+	nil, --attacks 
+	nil, --axeAttacks 
+	nil, --holdShield 
+	nil, --raiseShield 
+	nil, --holdBowIdle
+	nil, --chargeBow
+	nil, --fireBow
+	nil, --holdCrossbowIdle
+	nil, --holdCrossbowCharged
+	nil, --chargeCrossbow
+	nil, --fireCrossbow
+	nil, --crouch
+	nil, --uncrouch
+	nil, --crawl
+	nil, --uncrawl
+	nil, --crawling
+	nil, --fall
+	nil, --rise
+	nil, --fallimpact
+	nil, --elytra
+	nil, --rightEat
+	nil, --leftEat
+	nil, --rightDrink
+	nil, --leftDrink
+	nil, --sitMinecart
+	nil, --sitBoat
+	nil, --sitHorse
+	nil, --sitCamel
+	nil, --sitPig
+	nil, --hurt
+	nil, --die
+	nil, --swim
+	nil, --underWaterIdle,
+	nil, --underWaterMove,
+	nil, --climb --doesn't work lmao
+	nil, --sleep
+	nil, --StopCombos
+)
+]]
+
+--WIP NOTES
+-- Shield anims conflict with weapon anims
+-- Shield anims only work with offhand
+-- Weapon anims only work in mainhand
+-- If you're left handed just swap stuff around idk
+-- Axe Attacks currently don't work
+-- death anims are just weird
+-- climb doesn't work lmao
+
+--PLANS
+-- equip animations(when item like sword equpped plays an anim)
+
+--OTHER NOTES
+--make sure to take into account how vanilla player moves when doing things like crouching, crawling, elytra, swimming as you may have to adjust for those
+
+function squapi.animate(
+	idle, --plays at all times
+	walkanim, --plays when walking
+	reversewalk, --plays when walking backward
+	runanim, --plays when running(uses walking if nil)
+	sidewalkleft, 
+	sidewalkright, 
+	armswingleft, 
+	armswingright,
+	holdSwordIdle,
+	holdAxeIdle,
+	attacks, --minecraft attack with sword animations, tip: sword attack cooldown is .625 seconds. 
+	axeAttacks, --minecraft attack with axe animations, tip: axe attack cooldown is 1.25 seconds.(falls back to attacks)
+	holdShield, --this will play whenever the shield is in the offhand, note it plays on top of any animation currently playing, and does not override.
+	raiseShield, --plays when you raise your shield in the offhand
+	holdBowIdle,
+	chargeBow,
+	fireBow,
+	holdCrossbowIdle,
+	holdCrossbowCharged,
+	chargeCrossbow,
+	fireCrossbow,
+	crouch,
+	uncrouch,
+	crawl,
+	uncrawl,
+	crawling,
+	fall,
+	rise,
+	fallimpact,
+	elytra,
+	rightEat,
+	leftEat,
+	rightDrink,
+	leftDrink,
+	sitMinecart,
+	sitBoat,
+	sitHorse,
+	sitCamel,
+	sitPig,
+	hurt,
+	die,
+	swim,
+	underWaterIdle,
+	underWaterMove,
+	climb, --doesn't work lmao
+	sleep,
+	StopCombos
+	)
+	--initiates settings variables
+	if StopCombos == nil then StopCombos = true end
+
+	--initiates animations with fallbacks
+	local sidewalkleft = sidewalkleft or walkanim
+	local sidewalkright = sidewalkright or sidewalkleft
+	local crawling = crawling or walkanim
+	local rightDrink = rightDrink or rightEat
+	local leftDrink = leftDrink or leftEat
+	local attacks = attacks or armswingleft
+	local sitBoat = sitBoat or sitMinecart
+	local sitHorse = sitHorse or sitMinecart
+	local sitCamel = sitCamel or sitHorse
+	local sitPig = sitPig or sitHorse
+
+	-- initiates bounce objects
+	local walksmooth = squapi.bounceObject:new()
+	local runsmooth = squapi.bounceObject:new()
+	local sidewalksmooth = squapi.bounceObject:new()
+	local fallsmooth = squapi.bounceObject:new()
+	local risesmooth = squapi.bounceObject:new()
+	local elytrasmooth = squapi.bounceObject:new()
+	local reversesmooth = squapi.bounceObject:new()
+	local idlesmooth = squapi.bounceObject:new()
+	local swordsmooth = squapi.bounceObject:new()
+	local axesmooth = squapi.bounceObject:new()
+	local bowsmooth = squapi.bounceObject:new()
+	local crossbowsmooth = squapi.bounceObject:new()
+	local chargedsmooth = squapi.bounceObject:new()
+	local shieldsmooth = squapi.bounceObject:new()
+	local raiseshieldsmooth = squapi.bounceObject:new()
+
+	--initiates animations
+	if idle then idle:play() end
+	if holdSwordIdle then holdSwordIdle:play() end
+	if holdAxeIdle then holdAxeIdle:play() end
+	if holdBowIdle then holdBowIdle:play() end
+	if holdCrossbowIdle then holdCrossbowIdle:play() end
+	if runanim and walkanim then runanim:play() end
+	if walkanim then walkanim:play() end
+	if reversewalk then reversewalk:play() end
+	if sidewalkleft then sidewalkleft:play() end
+	if sidewalkright then sidewalkright:play() end
+	if rise then rise:play() end
+	if fall then fall:play() end
+	if crawling then crawling:play() end
+	if elytra then elytra:play() end
+	if type(attacks) == "Animation" then
+		attacks = {attacks}
+	end
+	if holdShield then holdShield:play() end
+	if raiseShield then raiseShield:play() end
+	if holdCrossbowCharged then holdCrossbowCharged:play() end
+	if swim then swim:play() end
+	if underWaterIdle then underWaterIdle:play() end
+	if underWaterMove then underWaterMove:play() end
+
+	--remembers active animations
+	local constants = {
+		idle,
+		holdSwordIdle,
+		holdAxeIdle,
+		holdBowIdle,
+		holdCrossbowIdle,
+		runanim,
+		walkanim,
+		reversewalk,
+		sidewalkleft,
+		sidewalkright,
+		rise,
+		fall,
+		crawling,
+		elytra,
+		holdShield,
+		raiseShield,
+		holdCrossbowCharged,
+		swim,
+		underWaterIdle,
+		underWaterMove
+	}
 	
-	runanim = runanim or nil
-
-	walksmooth = squapi.bounceObject:new()
-	runsmooth = squapi.bounceObject:new()
-
-	walkanim:play()
-	if runanim ~= nil then runanim:play() end
-
-	function events.render(delta, context)
+	local oldpose = "STANDING"
+	local oldswingtime = nil
+	local combo = 1
+	local combotimer = 1
+	local oldsit = nil
+	local oldhealth = 0
+	local olduseAction = "NONE"
+	local wascharged = false
+	local doWater = swim or underWaterIdle or underWaterMove
+	local arialtime = 0
+	local wasAnimations = squapi.doAnimations
+	--loop because duh
+	function events.render()
 		
-		local vel = squapi.getForwardVel()
-		if vel > 0.3 then vel = 0.3 end
+	local pose = player:getPose()
+	if pose == "SWIMMING" and not player:isInWater() then pose = "CRAWLING" end
 
-		walkanim:setBlend(walksmooth:doBounce(vel*4.633, .001, .2))
-		walkanim:setSpeed(walksmooth.pos)
-		
-		if runanim ~= nil then
+	if squapi.doAnimations and pose ~= "SLEEPING" then
+
+			--reinitializes animations 
+			if wasAnimations == false then
+				for i, v in ipairs(constants) do
+					if v then
+						v:play()
+					end
+				end
+				if sleep then sleep:stop() end
+			end
+			--setup variables
+			local swing = player:getSwingArm()
+			local swingtime = player:getSwingTime()
+			local speed = false
+			for i = 0, #(host:getStatusEffects()), 1 do
+				if host:getStatusEffects()[i] ~= nil then
+					speed = host:getStatusEffects()[i].name == "effect.minecraft.speed"
+				end
+			end
+			local vel = math.max(-0.3, math.min(0.3, squapi.getForwardVel()))
+			local yvel = squapi.yvel()
+			local svel = math.max(-0.3, math.min(0.3, squapi.getSideVelocity()))
+			local mainhand = player:getItem(1)
+			local offhand = player:getItem(2)
+			local sit = player:getVehicle()
+			local health = player:getHealth()
+			local grounded = player:isOnGround()
+			local useAction = player:getActiveItem():getUseAction()
+			local charged = mainhand.tag["Charged"] == 1
+			local water = player:isInWater()
+			local underwater = player:isUnderwater()
+
+			local arialstop = (arialtime > 10 and (fall ~= nil or rise ~=nil))
+
+			--IDLES AND BOW
+			local isattacking = false
+			if attacks then
+				for i, v in ipairs(attacks) do
+					if v:isPlaying() and v:getTime() < v:getLength()-.1 then
+						isattacking = true
+					end
+				end
+			end
+
+			--BOW/CROSSBOW
+			if useAction == "BOW" then --charging bow
+				if fireBow then fireBow:stop() end
+				isattacking = true
+				if chargeBow then chargeBow:play() end
+				bowsmooth.pos = 0
+			elseif useAction == "CROSSBOW" then --charging crossbow
+				if fireCrossbow then fireCrossbow:stop() end
+				isattacking = true
+				if chargeCrossbow then chargeCrossbow:play() end
+				crossbowsmooth.pos = 0
+			elseif not charged and wascharged and player:getHeldItem().id:find("crossbow") then
+				fireCrossbow:play()
+				chargeCrossbow:stop()
+			elseif olduseAction == "BOW" and player:getHeldItem().id:find("bow") then --fire bow
+				if chargeBow then chargeBow:stop() end
+				if fireBow then fireBow:play() end
+			else
+				if chargeBow then chargeBow:stop() end
+				if chargeCrossbow then chargeCrossbow:stop() end
+			end
+
+			if fireBow and fireBow:isPlaying() and fireBow:getTime() < fireBow:getLength()/2 then 
+				chargeBow:stop()
+				isattacking = true 
+				bowsmooth.pos = 0 
+			end
+			if fireCrossbow and fireCrossbow:isPlaying() and fireCrossbow:getTime() < fireCrossbow:getLength()/2 then
+				chargeCrossbow:stop()
+				isattacking = true
+				crossbowsmooth.pos = 0
+				chargedsmooth.pos = 0
+			end
 			
-			if player:isSprinting() then
-				walkanim:setBlend(0)
+
+			--SHIELD
+			if offhand.id:find("shield") then
+				if useAction == "BLOCK" then
+					if raiseShield then
+						raiseShield:setBlend(raiseshieldsmooth:doBounce(1, .1, .5))
+						if holdShield then holdShield:setBlend(shieldsmooth:doBounce(0, .1, .8)) end
+					else
+						if holdShield then holdShield:setBlend(shieldsmooth:doBounce(1, .001, .1)) end
+					end
+				else
+					if raiseShield then raiseShield:setBlend(raiseshieldsmooth:doBounce(0, .1, .5)) end
+					if holdShield then 
+						holdShield:setBlend(shieldsmooth:doBounce(1, .001, .1))
+					end
+				end
+			else
+				if raiseShield then raiseShield:setBlend(raiseshieldsmooth:doBounce(0, .1, .5)) end
+				if holdShield then holdShield:setBlend(shieldsmooth:doBounce(0, .001, .1)) end
+			end
+			
+
+			--IDLES
+			if squapi.doidleanimations and grounded and pose == "STANDING" and not isattacking  and vel > -.2 and vel < .2 and svel < .1 and svel > -.1then
+				if holdSwordIdle and player:getHeldItem().id:find("sword") then
+					holdSwordIdle:setBlend(swordsmooth:doBounce(1, .001, .1))
+					if holdAxeIdle then holdAxeIdle:setBlend(axesmooth:doBounce(0, .001, .1)) end
+					if idle then idle:setBlend(idlesmooth:doBounce(0, .001, .1)) end
+					if holdBowIdle then holdBowIdle:setBlend(bowsmooth:doBounce(0, .001, .1)) end
+					if holdCrossbowIdle then holdCrossbowIdle:setBlend(crossbowsmooth:doBounce(0, .001, .1)) end
+					if holdCrossbowCharged then holdCrossbowCharged:setBlend(chargedsmooth:doBounce(0, .001, .1)) end
+
+				elseif holdAxeIdle and player:getHeldItem().id:find("axe") and player:getHeldItem().id:find("pick") == nil then
+					holdAxeIdle:setBlend(axesmooth:doBounce(1, .001, .1))
+					if holdSwordIdle then holdSwordIdle:setBlend(swordsmooth:doBounce(0, .001, .1)) end
+					if idle then idle:setBlend(idlesmooth:doBounce(0, .001, .1)) end
+					if holdBowIdle then holdBowIdle:setBlend(bowsmooth:doBounce(0, .001, .1)) end
+					if holdCrossbowIdle then holdCrossbowIdle:setBlend(crossbowsmooth:doBounce(0, .001, .1)) end
+					if holdCrossbowCharged then holdCrossbowCharged:setBlend(chargedsmooth:doBounce(0, .001, .1)) end
+
+				elseif holdCrossbowIdle and player:getHeldItem().id:find("crossbow") then --crossbow
+					if charged and holdCrossbowCharged then 
+						holdCrossbowCharged:setBlend(chargedsmooth:doBounce(1, .001, .1))
+						holdCrossbowIdle:setBlend(crossbowsmooth:doBounce(0, .001, .1))
+					else
+						holdCrossbowIdle:setBlend(crossbowsmooth:doBounce(1, .001, .1))
+						holdCrossbowCharged:setBlend(chargedsmooth:doBounce(0, .001, .1))
+					end
+
+					if holdAxeIdle then holdAxeIdle:setBlend(axesmooth:doBounce(0, .001, .1)) end
+					if idle then idle:setBlend(idlesmooth:doBounce(0, .001, .1)) end
+					if holdBowIdle then holdBowIdle:setBlend(bowsmooth:doBounce(0, .001, .1)) end
+					if holdSwordIdle then holdSwordIdle:setBlend(swordsmooth:doBounce(0, .001, .1)) end
+
+				elseif holdBowIdle and player:getHeldItem().id:find("bow") then --bow
+					holdBowIdle:setBlend(bowsmooth:doBounce(1, .001, .1))
+					if holdSwordIdle then holdSwordIdle:setBlend(swordsmooth:doBounce(0, .001, .1)) end
+					if holdAxeIdle then holdAxeIdle:setBlend(axesmooth:doBounce(0, .001, .1)) end
+					if idle then idle:setBlend(idlesmooth:doBounce(0, .001, .1)) end
+					if holdCrossbowIdle then holdCrossbowIdle:setBlend(crossbowsmooth:doBounce(0, .001, .1)) end
+					if holdCrossbowCharged then holdCrossbowCharged:setBlend(chargedsmooth:doBounce(0, .001, .1)) end
+
+				else
+					if idle then idle:setBlend(idlesmooth:doBounce(1, .001, .1)) end
+					if holdSwordIdle then holdSwordIdle:setBlend(swordsmooth:doBounce(0, .001, .1)) end
+					if holdAxeIdle then holdAxeIdle:setBlend(axesmooth:doBounce(0, .001, .1)) end
+					if holdBowIdle then holdBowIdle:setBlend(bowsmooth:doBounce(0, .001, .1)) end
+					if holdCrossbowIdle then holdCrossbowIdle:setBlend(crossbowsmooth:doBounce(0, .001, .1)) end
+					if holdCrossbowCharged then holdCrossbowCharged:setBlend(chargedsmooth:doBounce(0, .001, .1)) end
+				end
+			else
+				if idle then idle:setBlend(idlesmooth:doBounce(0, .001, .1)) end
+				if holdSwordIdle then holdSwordIdle:setBlend(swordsmooth:doBounce(0, .001, .1)) end
+				if holdAxeIdle then holdAxeIdle:setBlend(axesmooth:doBounce(0, .001, .1)) end
+				if holdBowIdle then holdBowIdle:setBlend(bowsmooth:doBounce(0, .001, .1)) end
+				if holdCrossbowIdle then holdCrossbowIdle:setBlend(crossbowsmooth:doBounce(0, .001, .1)) end
+				if holdCrossbowCharged then holdCrossbowCharged:setBlend(chargedsmooth:doBounce(0, .001, .1)) end
+			end
+			
+
+
+
+			--Damage + Death
+			if oldhealth > health then
+				hurt:play()
+			end
+			if health == 0 then
+				die:play()
+			end
+
+
+			--Sitting Animations
+			if sit ~= nil then
+				idle:stop()
+				walkanim:stop()
+				runanim:stop()
+				sidewalkleft:stop()
+				sidewalkright:stop()
+				if sit:getName() == "Minecart" and sitMinecart ~= nil then
+					sitMinecart:play()
+				elseif sit:getName() == "Boat" and sitBoat ~= nil then
+					sitBoat:play()
+				elseif sit:getName() == "Horse" and sitHorse ~= nil then
+					sitHorse:play()
+				elseif sit:getName() == "Camel" and sitCamel ~= nil then
+					sitCamel:play()
+				elseif sit:getName() == "Pig" and sitPig ~= nil then
+					sitPig:play()
+				end
+			elseif oldsit ~= nil then
+				sitBoat:stop()
+				sitMinecart:stop()
+				sitHorse:stop()
+				sitCamel:stop()
+				sitPig:stop()
+				if idle ~= nil then idle:play() end
+				if runanim ~= nil and walkanim ~= nil then runanim:play() end
+				if walkanim ~= nil then walkanim:play() end
+				if sidewalkleft ~= nil then sidewalkleft:play() end
+				if sidewalkright ~= nil then sidewalkright:play() end
+			end
+
+
+			--Elytra
+			if elytra ~= nil then
+				if pose == "FALL_FLYING" then
+					elytra:setBlend(elytrasmooth:doBounce(1, .001, .1))
+					if walkanim ~= nil then walkanim:setBlend(0) end
+					if runanim ~= nil then walkanim:setBlend(0) end
+				else
+					elytra:setBlend(elytrasmooth:doBounce(0, .001, .1))
+				end
+			end
+
+
+			--fall impact animation
+			if fallimpact ~= nil then
+				if arialtime > 10 and yvel < 0 and grounded and not fallimpact:isPlaying() then
+					fallimpact:setBlend(math.min(-yvel*2.5 + 0.4, 2))
+					fallimpact:setSpeed(math.max(1+yvel/2, .5))
+					fallimpact:play()
+				end
+			end
+			
+			
+			--fall, rise, jump animations
+			if fall ~= nil and rise ~= nil and pose ~= "FALL_FLYING" and not grounded then
+				if yvel < 0 then	
+					fall:setBlend(fallsmooth:doBounce(-math.max(yvel*2, -1), .001, .1))
+					rise:setBlend(risesmooth:doBounce(0, .001, .1))
+				else 
+					rise:setBlend(risesmooth:doBounce(math.min(yvel*3, 1.2), .001, .1))
+					fall:setBlend(fallsmooth:doBounce(0, .001, .1))
+				end
+				fall:setSpeed(fallsmooth.pos)
+				rise:setSpeed(risesmooth.pos)
+			else
+				if fall then fall:setBlend(fallsmooth:doBounce(0, .001, .1)) end
+				if rise then rise:setBlend(risesmooth:doBounce(0, .001, .1)) end
+			end
+
+			-- Crouch, UnCrouch, Crawl, and UnCrawl
+
+			if crouch ~= nil then
+				if pose == "CROUCHING" then
+					
+					if uncrouch ~= nil then
+						uncrouch:stop()
+					end
+					crouch:play()
 				
-				local target = vel*3.57
-				--prevents wierd issue when looking up
-				if target == 0 then
-					target = 1
+				elseif oldpose == "CROUCHING" then
+					crouch:stop()
+					if uncrouch ~= nil then
+						uncrouch:play()
+					end
+				
+				elseif crawl ~= nil then
+					
+					if pose == "CRAWLING" then
+						if uncrawl ~= nil then
+							uncrawl:stop()
+						end
+						crawl:play()
+					elseif oldpose == "CRAWLING" then
+						crawl:stop()
+						if uncrawl ~= nil then
+							uncrawl:play()
+						end
+					end
+
+				end
+			end
+
+			--eat/drink animations
+
+			if player:isUsingItem() then
+				if player:getActiveHand() == "MAIN_HAND" then
+					if mainhand:getUseAction() == "EAT" then
+						if rightEat~=nil then rightEat:play() end
+					elseif mainhand:getUseAction() == "DRINK" then
+						if rightDrink ~= nil then rightDrink:play() end
+					end
 				end
 
-				if runsmooth.pos < 0 then
-					runsmooth.pos = runsmooth.pos * -4
+				if player:getActiveHand() == "OFF_HAND" then
+					if offhand:getUseAction() == "EAT" then
+						if leftEat~=nil then leftEat:play() end
+					elseif offhand:getUseAction() == "DRINK" then
+						if leftDrink ~= nil then leftDrink:play() end
+					end
 				end
-				runanim:setBlend(runsmooth:doBounce(target, .001, .2))
-				runanim:setSpeed(runsmooth.pos)
+			else 
+				if rightEat~=nil then rightEat:stop() end
+				if leftEat~=nil then leftEat:stop() end
+				if leftDrink ~= nil then leftDrink:stop() end
+				if rightDrink ~= nil then rightDrink:stop() end
+			end
+
+
+
+			--armswing animation
+
+			local punch = nil
+			if swingtime == 1 and oldswingtime == 0 then
+				punch = swing
+			end
+
+			if not StopCombos then
+				combotimer = 50
+			end
+			if attacks ~= nil then
+				if combo > #attacks then combo = 1 end
+
+				if combotimer > 1 then
+					combotimer = combotimer - 1
+				else
+					combo = 1
+				end
+			end
+
+			if armswingright ~= nil and armswingleft ~= nil then
+				if punch == "MAIN_HAND" then
+					if attacks ~= nil and (player:getHeldItem().id:find("sword") ~= nil or (player:getHeldItem().id:find("axe") ~= nil and player:getHeldItem().id:find("pick") == nil)) then
+						for i, a in pairs(attacks) do
+							a:stop()
+						end
+						attacks[combo]:play()
+						combo = combo + 1
+						combotimer = 80
+					else
+						armswingleft:stop()
+						armswingleft:play()
+					end
+					
+				end
+				if punch == "OFF_HAND" then
+					armswingright:stop()
+					armswingright:play()
+				end
+			end
+			
+		
+			--Sideways walk animation
+
+			if sidewalkleft ~= nil and sidewalkright ~= nil and pose ~= "FALL_FLYING" and pose ~= "CROUCHING" and not arialstop then
+				if svel > 0 then
+					sidewalkright:setBlend(sidewalksmooth:doBounce(svel*4.633, .001, .2))
+					sidewalkright:setSpeed(-sidewalksmooth.pos)
+					sidewalkleft:setBlend(0)
+				else
+					sidewalkleft:setBlend(-sidewalksmooth:doBounce(svel*4.633, .001, .2))
+					sidewalkleft:setSpeed(sidewalksmooth.pos)
+					sidewalkright:setBlend(0)
+				end
+			else
+				if sidewalkright then sidewalkright:setBlend(0) end
+				if sidewalkleft then sidewalkleft:setBlend(0) end
+			end
+			
+
+			-- MOVEMENT ANIMATIONS!!!
+			walksmooth.vel = math.max(math.min(walksmooth.vel, .01), -.01)
+			--runsmooth.vel = math.max(math.min(runsmooth.vel, .002), -.002)
+			reversesmooth.pos = math.max(math.min(reversesmooth.pos, 1), 0)
+			walksmooth.pos = math.max(math.min(walksmooth.pos, 1), 0)
+			runsmooth.pos = math.max(math.min(runsmooth.pos, 1), 0)
+			
+			if walkanim ~= nil and pose ~= "FALL_FLYING" and (not arialstop or water) then
+				local walk = walkanim
+				if crawling ~= nil and pose == "CRAWLING" then
+					walkanim:setBlend(0)
+					walk = crawling
+					vel = math.sqrt(vel^2 + svel^2)
+				elseif water then
+					walkanim:setBlend(0)
+					if crawling then crawling:setBlend(0) end
+					if pose == "SWIMMING" then
+						walk = swim
+						underWaterMove:setBlend(0)
+						vel = math.sqrt(vel^2 + svel^2)*1.5
+					else
+						walk = underWaterMove
+						swim:setBlend(0)
+						vel = math.sqrt(vel^2 + svel^2)*2
+
+					end
+				else 
+					if crawling then crawling:setBlend(0) end
+					if swim then swim:setBlend(0) end
+					if underWaterMove then underWaterMove:setBlend(0) end
+				end
+				if sidewalkleft == walk then vel = math.sqrt(vel^2 + svel^2) end
+				local target = vel*4.633
+				if crawling ~= nil and pose == "CRAWLING" then
+					target = vel*15.504
+				elseif not runanim and player:isSprinting() then
+					target = target*2
+				end
+				
+				if reversewalk then
+					if vel >= 0 then
+						walk:setBlend(walksmooth:doBounce(target, .001, .2))
+						reversewalk:setBlend(reversesmooth:doBounce(0, .001, .2))
+					else
+						walk:setBlend(walksmooth:doBounce(0, .001, .2))
+						reversewalk:setBlend(reversesmooth:doBounce(-target, .001, .2))
+					end
+				else
+					walk:setBlend(walksmooth:doBounce(target, .001, .2))
+				end
+				
+
+				if speed then
+					walkanim:setSpeed(walksmooth.pos*1.5)
+				else
+					walkanim:setSpeed(walksmooth.pos)
+				end
+				
+				-- Run Animation
+				if runanim ~= nil then
+					
+					if player:isSprinting() and not water then
+						walk:setBlend(0)
+						
+						local target = math.max(vel*3.57, 0)
+						--prevents wierd issue when looking up
+						if target == 0 then
+							target = 1
+						end
+
+						if runsmooth.pos < 0 then
+							runsmooth.pos = runsmooth.pos * -4
+						end
+
+						runanim:setBlend(runsmooth:doBounce(target, .001, .2))
+						
+						if speed then
+							runanim:setSpeed(runsmooth.pos*1.5)
+						else
+							runanim:setSpeed(runsmooth.pos)
+						end
+					else
+						runanim:setBlend(runsmooth:doBounce(0, .1, .1))
+						runanim:setSpeed(runsmooth.pos)
+					end
+				end
 
 			else
-				runanim:setBlend(runsmooth:doBounce(0, .001, .2))
-				runanim:setSpeed(runsmooth.pos)
+				
+				if runanim then runanim:setBlend(runsmooth:doBounce(0, .02, .1)) end
+				if walkanim then walkanim:setBlend(walksmooth:doBounce(0, .02, .1)) end
+				if crawling then crawling:setBlend(0) end
+				if swim then swim:setBlend(0) end
+				if underWaterMove then underWaterMove:setBlend(0) end
+				if reversewalk then reversewalk:setBlend(reversesmooth:doBounce(0, .02, .1)) end
 			end
+
+
+			--memorizes variables from last iteration
+			if grounded then 
+				arialtime = 0
+			else
+				arialtime = arialtime + 1
+			end
+			oldpose = pose
+			oldswingtime = swingtime
+			oldsit = sit
+			oldhealth = health
+			olduseAction = useAction
+			wascharged = charged
+		else
+			for i, v in ipairs(constants) do
+				if v then
+					v:stop()
+				end
+			end
+			if squapi.doAnimations then
+				if sleep then sleep:play() end
+			else
+				if sleep then sleep:stop() end
+			end
+
 		end
 
+		wasAnimations = squapi.doAnimations
 	end
 end
+
 
 
 --FLOATING POINT ITEM
@@ -116,37 +785,53 @@ end
 -- *ymin:	 	how far down the "floor" is; this helps prevent it from clipping into the ground too much(may still clip a bit)
 -- *maxradius	this will limit how far away the object can go. setting to "nil" means no limit
 
-function squapi.floatPoint(element, xoffset, yoffset, zoffset, stiffness, bouncy, ymin, maxradius)
-	element:setParentType("WORLD")
-	local point = {
-		squapi.bounceObject:new(), 
-		squapi.bounceObject:new(), 
-		squapi.bounceObject:new(), 
-		squapi.bounceObject:new()
-	}
-	local stiff = stiffness or .02
-	local bounce = bouncy or .0005
+squapi.floatPoint = {}
+squapi.floatPoint.__index = squapi.floatPoint
+function squapi.floatPoint.new(element, xoffset, yoffset, zoffset, stiffness, bouncy, ymin, maxradius)
+  local self = setmetatable({}, squapi.floatPoint)
+  self.element = element
+  assert(self.element,
+  "§4The float point's model path is incorrect.§c")
+  self.element:setParentType("WORLD")
+  self.point = {
+	  squapi.bounceObject:new(), 
+	  squapi.bounceObject:new(), 
+	  squapi.bounceObject:new(), 
+	  squapi.bounceObject:new()
+  }
+  self.stiff = stiffness or .02
+  self.bounce = bouncy or .0005
 
+  self.rotstiff = .0005
+  self.rotbounce =  .03
 
-	local rotstiff = .0005
-	local rotbounce =  .03
+  self.ymin = ymin or 30
+  self.maxradius = maxradius or nil
+  self.init = true
 
-	local ymin = ymin or 30
-	local maxradius = maxradius or nil
-	local init = true
+  self.x = xoffset or 0
+  self.y = yoffset or 0
+  self.z = zoffset or 0
 
-	local x = xoffset or 0
-	local y = yoffset or 0
-	local z = zoffset or 0
+  self.active = true
+  function self.disable()
+	self.active = false --sets active false
+  end
+  function self.enable() --sets active true
+	self.active = true
+  end
+  function self.toggle() --toggles activeness
+	self.active = not self.active
+  end
 
-	function events.render(delta, context)
-		if init then
-			point[1].pos = player:getPos()[1]*16 + x
-			point[2].pos = player:getPos()[2]*16 + y
-			point[3].pos = player:getPos()[3]*16 + z
-			point[4].pos = -player:getBodyYaw()-180
+  function events.render(delta, context) --rendering always running
+		if self.init then
+			self.point[1].pos = player:getPos()[1]*16 + self.x
+			self.point[2].pos = player:getPos()[2]*16 + self.y
+			self.point[3].pos = player:getPos()[3]*16 + self.z
+			self.point[4].pos = -player:getBodyYaw()-180
 
-			init = false
+			self.init = false
 		end
 		
 		local targetx = player:getPos()[1]*16
@@ -155,37 +840,40 @@ function squapi.floatPoint(element, xoffset, yoffset, zoffset, stiffness, bouncy
 		local targetrot = -player:getBodyYaw()-180
 		
 		--avoids going to low/getting to far based on radius and miny
-		stiff = stiffness or .02
-		bounce = bouncy or .0005
-		if point[2].pos-player:getPos()[2]*16 < -ymin then
-			stiff = 0.035
-			bounce = .01
-		elseif maxradius ~= nil then
+		self.stiff = stiffness or .02
+		self.bounce = bouncy or .0005
+		if self.point[2].pos-player:getPos()[2]*16 < -self.ymin then
+			self.stiff = 0.035
+			self.bounce = .01
+		elseif self.maxradius ~= nil then
 			if  
-				point[1].pos-player:getPos()[1]*16 < -maxradius 
-				or point[1].pos-player:getPos()[1]*16 > maxradius  
-				or point[2].pos-player:getPos()[2]*16 < -maxradius 
-				or point[2].pos-player:getPos()[2]*16 > maxradius 
-				or point[3].pos-player:getPos()[3]*16 < -maxradius 
-				or point[3].pos-player:getPos()[3]*16 > maxradius 
+				point[1].pos-player:getPos()[1]*16 < -self.maxradius 
+				or point[1].pos-player:getPos()[1]*16 > self.maxradius  
+				or point[2].pos-player:getPos()[2]*16 < -self.maxradius 
+				or point[2].pos-player:getPos()[2]*16 > self.maxradius 
+				or point[3].pos-player:getPos()[3]*16 < -self.maxradius 
+				or point[3].pos-player:getPos()[3]*16 > self.maxradius 
 				then
 					
-					stiff = stiff*0.57
-					bounce = bounce * 400		
+					self.stiff = self.stiff*0.57
+					self.bounce = self.bounce * 400		
 			end
 		end
 		
 		--local truepos = element:getPos() - player:getPos()*16
-		if squapi.floatPointEnabled then
-			element:setPivot(-x,-y,-z)
-			element:setPos(
-				point[1]:doBounce(targetx, bounce, stiff) + x,
-				point[2]:doBounce(targety, bounce, stiff) + y, 
-				point[3]:doBounce(targetz, bounce, stiff) + z
+		if self.active then
+			self.element:setPivot(-self.x,-self.y,-self.z)
+			self.element:setPos(
+				self.point[1]:doBounce(targetx, self.bounce, self.stiff) + self.x,
+				self.point[2]:doBounce(targety, self.bounce, self.stiff) + self.y, 
+				self.point[3]:doBounce(targetz, self.bounce, self.stiff) + self.z
 			)
-			element:setRot(0, point[4]:doBounce(targetrot, rotstiff, rotbounce), 0)
+			self.element:setRot(0, self.point[4]:doBounce(targetrot, self.rotstiff, self.rotbounce), 0)
 		end
 	end
+
+
+  return self
 end
 
 
@@ -195,6 +883,8 @@ end
 -- model:			the path to your model element. Most cases, if you're model is named "model", than it'd be models.model (replace model with the name of your model) 
 -- *bounceMultipler:normally 1, this multiples how much the bounce occurs. values greater than 1 will increase bounce, and values less than 1 will decrease bounce.
 function squapi.bouncewalk(model, bounceMultipler)
+	assert(model,
+	"§4Your model path for bouncewalk is incorrect.§c")
 	squapi.doBounce = true
 	bouncemultipler = bounceMultipler or 1
 	function events.render(delta, context)
@@ -255,6 +945,8 @@ end
 -- element:				the torso element that you wish to effect. Make sure this group/bone contains all elements attached to the body.
 -- *strengthmultiplier:	normally .4; this controls how strongly the torso moves
 function squapi.smoothTorso(element, strengthMultiplier, tilt)
+	assert(element,
+	"§4Your model path for smoothTorso is incorrect.§c")
 	strengthmultiplier = strengthMultiplier or .5
 	tilt = tilt or 0.4
 	squapi.cancelHeadMovement = true
@@ -286,6 +978,8 @@ end
 -- *keeporiginalheadpos: when true(automatically true) the heads position will change like normally, set to false to disable.
 -- IMPORTANT: for this to work you need to name your head element something other than "Head" - the name "Head" will make it follow vanilla rotations which we don't want, so it is reccomended to rename it to something like "head" instead)
 function squapi.smoothHead(element, tilt, strength, keeporiginalheadpos)
+	assert(element,
+	"§4Your model path for smoothHead is incorrect.§c")
 	strength = strength or 1
 	tilt = tilt or 1/10
 	if keeporiginalheadpos == nil then keeporiginalheadpos = true end
@@ -325,8 +1019,14 @@ end
 -- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
 -- element:	 			the head element
 -- element2: 			the neck element
+-- *tilt:				how strong the heads extra tilt factor is(this adds more character)
+-- *strength:			how much the head should follow vanill movements. .5 means half, 2 means double.
 -- *keeporiginalheadpos: when true(automatically true) the heads position will change like normally, set to false to disable.
 function squapi.smoothHeadNeck(element, element2, tilt, strength, keeporiginalheadpos)
+	assert(element,
+	"§4Your head model path for smoothHeadNeck is incorrect.§c")
+	assert(element2,
+	"§4Your neck model path for smoothHeadNeck is incorrect.§c")
 	strength = strength or 1
 	tilt = tilt or 2.5
 	tilt = tilt/5
@@ -368,6 +1068,8 @@ end
 -- *downdistance: 	the distance from the eye to it's downmost posistion
 
 function squapi.eye(element, leftdistance, rightdistance, updistance, downdistance, switchvalues)
+	assert(element,
+	"§4Your eye model path is incorrect.§c")
 	local switchvalues = switchvalues or false
 	local left = leftdistance or .25
 	local right = rightdistance or 1.25
@@ -401,14 +1103,47 @@ end
 -- guide:(note if it has a * that means you can leave it blank to use reccomended settings)
 -- animation: 			the blink animation to play
 -- *chancemultipler:	higher values make blinks less likely to happen, lower values make them more common.
-function squapi.blink(animation, chancemultipler)
-	local blinkchancemultipler = chancemultipler or 1
+function squapi.blink(animation, chancemultiplier)
+	local chancemultiplier = chancemultiplier or 1
+	local blinkObject = squapi.randimation.new(animation, chancemultiplier*200)
+
 	function events.tick()
-		if math.random(0, 200 * blinkchancemultipler) == 1 and animation:isStopped() and squapi.doBlink then
-			animation:play()
+		local pose = player:getPose()
+		if pose == "SLEEPING" or squapi.doBlink == false then
+			blinkObject:setEnabled(false)
+		else
+			blinkObject:setEnabled(true)
 		end
-	end	
+	end
 end
+
+--RANDOM ANIMATION OBJECT
+--this object will take in an animation and plays it randomly every tick by a specified amount. 
+--*chanceRange is an optional paramater that sets the range. 0 means every tick, larger values mean lower chances of playing every tick.
+--setEnabled() function will take in a boolean and sets weather the randimation is enabled/disabled.
+squapi.randimation = {}
+squapi.randimation.__index = squapi.randimation
+function squapi.randimation.new(animation, chanceRange)
+	local self = setmetatable({}, squapi.floatPoint)
+	self.animation = animation
+	self.chanceRange = chanceRange or 200
+	self.enabled = true
+
+	function self:setEnabled(state)
+		self.enabled = state
+	end
+
+
+	function events.tick()
+		if self.enabled and math.random(0, self.chanceRange) == 0 and self.animation:isStopped() then
+			self.animation:play()
+		end
+	end
+
+	return self
+end
+
+
 
 
 --TAIL PHYSICS!!
@@ -450,9 +1185,12 @@ function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailY
 	if type(tailsegs) == "ModelPart" then
 		tailsegs = {tailsegs}
 	end
-	assert(type(tailsegs) == "table", "your tailsegs table seems to to be incorrect")
+	assert(type(tailsegs) == "table", 
+	"your tailsegs table seems to to be incorrect")
 	
 	for i = 1, #tailsegs do
+		assert(tailsegs[i]:getType() == "GROUP",
+		"§4The tail segment at position "..i.." of the table is not a group. The tail segments need to be groups that are nested inside the previous segment.§c")
         tailrot[i], tailvel[i], tailrotx[i], tailvelx[i] = 0, 0, 0, 0
     end
 	
@@ -472,7 +1210,8 @@ function squapi.tails(tailsegs, intensity, tailintensityY, tailintensityX, tailY
 		local vel = squapi.getForwardVel()
 		local yvel = squapi.yvel()
 		--local svel = squapi.getSideVelocity()
-		local tailintensity = tailintensity/(math.abs((yvel*30))-vel*30 + 1)
+		local tailintensity = tailintensity/(math.abs((yvel*30))+vel*30 + 1)
+
 		local pose = player:getPose()
 		for i, tail in ipairs(tailsegs) do
 			local tailtargety = math.sin((time * tailxspeed)/10 - (i * segoffsetmultipler) + initialTailOffset) * tailintensity
@@ -522,6 +1261,9 @@ end
 -- *earbounce: 		how bouncy the ears are(0-1)
 
 function squapi.ear(element, element2, doearflick, earflickchance, rangemultiplier, horizontalEars, bendstrength, earstiffness, earbounce)
+	assert(element,
+	"§4The first ear's model path is incorrect.§c")
+
 	if doearflick == nil then doearflick = true end
 	local earflickchance = earflickchance or 400
 	local element2 = element2 or nil
@@ -622,6 +1364,8 @@ end
 -- *stiff: 		 how stiff they are(0-1)
 -- *bounce: 	 how bouncy they are(0-1)
 function squapi.bewb(element, doidle, bendability, stiff, bounce)
+	assert(element,
+	"§4Your model path for bewb is incorrect.§c")
 	if doidle == nil then doidle = true end
 	local stiff = stiff or 0.025
 	local bounce = bounce or 0.06
@@ -666,6 +1410,8 @@ end
 -- *slowfactor: 	increase this to slow down the animation. 
 -- *vertical:		set to true if you'd like the animation frames to go down instead of right.
 function squapi.animateTexture(element, numberofframes, framepercent, slowfactor, vertical)
+	assert(element,
+	"§4Your model path for animateTexture is incorrect.§c")
 	vertical = vertical or false
 	frameslowfactor = slowfactor or 1
 	function events.tick()
@@ -684,6 +1430,8 @@ end
 -- *scale:						the scale of the hand in first person
 -- *onlyVisibleInFirstPerson:	if this is true, the element will ONLY be visible in first person
 function squapi.setFirstPersonHandPos(element, x, y, z, scale, onlyVisibleInFirstPerson)
+	assert(element,
+	"§4Your model path for setFirstPersonHandPos is incorrect.§c")
 	onlyVisibleInFirstPerson = onlyVisibleInFirstPerson or false
 	x = x or 0
 	y = y or 0
@@ -710,6 +1458,12 @@ end
 -- frontlegs: 	the group that contains both front legs
 -- backlegs: 	the group that contains both back legs
 function squapi.taurPhysics(taurbody, frontlegs, backlegs)
+	assert(taurbody,
+	"§4Your model path for the body in taurPhysics is incorrect.§c")
+	assert(frontlegs,
+	"§4Your model path for the front legs in taurPhysics is incorrect.§c")
+	assert(backlegs,
+	"§4Your model path for the back legs in taurPhysics is incorrect.§c")
 	squapi.cent = squapi.bounceObject:new()
 	
 	function events.render(delta, context)
@@ -839,5 +1593,84 @@ function squapi.bouncetowards(current, target, vel, stiff, bounce)
 	current = (current + vel) + (dif * bounce)
 	return current, vel
 end
+
+
+
+--LEGACY FLOAT POINT
+
+function squapi.floatPointOld(element, xoffset, yoffset, zoffset, stiffness, bouncy, ymin, maxradius)
+	assert(element,
+	"§4The float point's model path is incorrect.§c")
+	element:setParentType("WORLD")
+	local point = {
+		squapi.bounceObject:new(), 
+		squapi.bounceObject:new(), 
+		squapi.bounceObject:new(), 
+		squapi.bounceObject:new()
+	}
+	local stiff = stiffness or .02
+	local bounce = bouncy or .0005
+
+
+	local rotstiff = .0005
+	local rotbounce =  .03
+
+	local ymin = ymin or 30
+	local maxradius = maxradius or nil
+	local init = true
+
+	local x = xoffset or 0
+	local y = yoffset or 0
+	local z = zoffset or 0
+
+	function events.render(delta, context)
+		if init then
+			point[1].pos = player:getPos()[1]*16 + x
+			point[2].pos = player:getPos()[2]*16 + y
+			point[3].pos = player:getPos()[3]*16 + z
+			point[4].pos = -player:getBodyYaw()-180
+
+			init = false
+		end
+		
+		local targetx = player:getPos()[1]*16
+		local targety = player:getPos()[2]*16
+		local targetz = player:getPos()[3]*16
+		local targetrot = -player:getBodyYaw()-180
+		
+		--avoids going to low/getting to far based on radius and miny
+		stiff = stiffness or .02
+		bounce = bouncy or .0005
+		if point[2].pos-player:getPos()[2]*16 < -ymin then
+			stiff = 0.035
+			bounce = .01
+		elseif maxradius ~= nil then
+			if  
+				point[1].pos-player:getPos()[1]*16 < -maxradius 
+				or point[1].pos-player:getPos()[1]*16 > maxradius  
+				or point[2].pos-player:getPos()[2]*16 < -maxradius 
+				or point[2].pos-player:getPos()[2]*16 > maxradius 
+				or point[3].pos-player:getPos()[3]*16 < -maxradius 
+				or point[3].pos-player:getPos()[3]*16 > maxradius 
+				then
+					
+					stiff = stiff*0.57
+					bounce = bounce * 400		
+			end
+		end
+		
+		--local truepos = element:getPos() - player:getPos()*16
+		if squapi.floatPointEnabled then
+			element:setPivot(-x,-y,-z)
+			element:setPos(
+				point[1]:doBounce(targetx, bounce, stiff) + x,
+				point[2]:doBounce(targety, bounce, stiff) + y, 
+				point[3]:doBounce(targetz, bounce, stiff) + z
+			)
+			element:setRot(0, point[4]:doBounce(targetrot, rotstiff, rotbounce), 0)
+		end
+	end
+end
+
 
 return squapi
