@@ -388,7 +388,7 @@ function squapi.animate(
 			
 
 			--IDLES
-			if squapi.doidleanimations and grounded and pose == "STANDING" and not isattacking  and vel > -.2 and vel < .2 and svel < .1 and svel > -.1then
+			if squapi.doidleanimations and grounded and pose == "STANDING" and not isattacking  and vel > -.2 and vel < .2 and svel < .1 and svel > -.1 then
 				if holdSwordIdle and player:getHeldItem().id:find("sword") then
 					holdSwordIdle:setBlend(swordsmooth:doBounce(1, .001, .1))
 					if holdAxeIdle then holdAxeIdle:setBlend(axesmooth:doBounce(0, .001, .1)) end
