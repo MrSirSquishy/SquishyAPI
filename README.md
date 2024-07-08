@@ -12,25 +12,17 @@ https://mrsirsquishy.notion.site/Squishy-API-Guide-3e72692e93a248b5bd88353c96d8e
 
 <h3>Current Feature List:</h3>
 
-- Smooth Head:            Smooths your head movement and also adds some more depth to it's movement as well
-- Smooth Head + Neck:     Similar to Smooth Head but also takes into account a neck bone to they are integrated well
-- Eye Movement:           Easy to add Eye movement that can work on basically any general eye shape through the use of parabolic curves.
-- Blink script:           Just a simple script that runs a specified blink animation when needed
-- Ear Physics:            This will add physics to your ears when you move, jump, crouch, or move your head, and it also adds a disableable ear flick animation randomly for added depth.
-- Tail Physics:           This will add phsycis to your tails when you spin, move, jump, etc. Has capabilites for wag modification, and is very versatile in how you'd like to control it.
-- Tiddy Physics:          A simple to modify bewb physic script, with configurable bodaciousness.
-- Animated Texture script:A simplified script for animated textures so you don't have to give yourself a headache.
-- FP hand adjust:         A simple script that just moves the first person hand.
-- Centaur Body Physics:   Have a centaur body? With some correct pivot stucturing you can get your centaur body to move accurately when jumping and falling.
-- Crouch Animation:       A simple script that can either have a specific crouch pose, or better yet have an animation for crouching and uncrouching.
-- Walk/Run animations:    This allows you to smoothly play walk and run animations without snapping.
-- Floating Points:        These are points that will float to a designated position rather than just follow a players movement. Good for stuff like fairies, pets, miscelanious floating objects, or floaty avatar models. 
-- Bounce Walk:            This will make your avatar slightly bounce when you walk, good for smaller cuter models to make them look like they're hopping around(also affects physics of other objects)
-- Smooth Torso:           This will make your body/torso move smoothly based on where you are looking to make it look like your avatar is bending in the direction
+- Eye Movement: moves an eye based on the head rotation that should work with any general eye type. 
+- Tail Physics: This will add physics to your tails when you spin, move, jump, etc. Has the option to have an idle tail movement, and can work with a tail with any number of segments. 
+- Ear Physics: This adds physics to your ear(s) when you move, and has options for different ear types. 
+- Crouch Animation(returned): Allows you to easily set a crouch pose, or crouch/uncroch animations, and even crawl/uncrawl animations/poses
+- Bewb Physics: This can add bewb physics to your avatar, which for some reason is also versatile for non-tiddy related activities
+- Randimation: Used to be known as `squapi.blink`, this will randomly play a given animation, most commonly used for blinking
+- Hover Point: Used to be known as `squapi.floatPoint`, this will allow you to have an object float naturally to it's normal position.(with optional experimental collision)
+- Vanilla Leg: This applies vanilla leg movement to a given object, but allows you to modify the strength of the movement and enable/disable it on command.(example use: legs under a dress)
+- Vanilla Arm: Like above, but arm
+- Bounce Walk: Makes your avatar bounce when they walk. 
+- First Person Hand: Allows you to have more control over displaying your hand in first person, or even just having a custom element for your hand. 
+- *Smooth Head: Smooths your head movement with additional depth added to it, `squapi.smoothTorso` and `squapi.smoothHeadWithNeck` have been removed, and instead these capabilities have been given to smooth head. You can input either a single head element like normal, or you can input a table of elements(for example torso, neck, head) and the rotation can be distributed between these. 
 
-<h4>More advanced features if you know what you're doing:</h4>
-
-- Control Variables:      variables that control certain aspects like eye scale, blink enabling, tailwag, etc. that can be modified in your script. good for emotes.
-- Linear Graph:           returns y value of input t value of the linear graph between two points
-- Parabolic Graph:        returns y value of input t value of the parabolic graph between three points
-- Bounce Object:          creates a bounce object that when doBounce is run will bounce towards a target smoothly based on preset settings.
+- (advanced)Bounce object has been replaced by BERP, which is cleaner and more consistent, and works with respect to dt.(also has been added BERP3D for 3d vectors) 
