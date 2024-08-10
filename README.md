@@ -1,14 +1,16 @@
 # SquishyAPI
 
-Discord tag: mrsirsquishy
-Everything me: 
-https://mrsirsquishy.notion.site/mrsirsquishy/Squishy-e825d3a72f29453799f6970e7d0dd107#328c79ebd3324f14be7cd7c743cb99a3
+<h3>Discord tag: mrsirsquishy</h3>
+<h4>My links: https://mrsirsquishy.notion.site/Squishy-e825d3a72f29453799f6970e7d0dd107</h4>
 
-<h5>All Rights Reserved. Do not Redistribute without explicit permission.</h5>
+<h4>How to Use/Documentation:
+https://mrsirsquishy.notion.site/Squishy-API-Guide-3e72692e93a248b5bd88353c96d8e6c5</h4>
+
+<h5>CC BY-NC-SA Liscense: https://creativecommons.org/licenses/by-nc-sa/4.0/</h5>
 
 
-Documentation:
-https://mrsirsquishy.notion.site/Squishy-API-Guide-3e72692e93a248b5bd88353c96d8e6c5
+
+
 
 <h3>Current Feature List:</h3>
 
