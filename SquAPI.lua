@@ -36,12 +36,22 @@
 
 
 --setup stuff
-local squassets 
-if pcall(require, "SquAssets") then
-    squassets = require("SquAssets")
-else
-    error("§4Missing SquAssets file! Make sure to download that from the GitHub too!§c")
+
+-- Locates SquAssets, if it exists
+-- Written by FOX
+local squassets
+local scripts = listFiles("/", true)
+for _, path in pairs(scripts) do
+  local search = string.find(path, "SquAssets")
+  if search then
+    squassets = require(path)
+  end
 end
+-- If SquAssets doesn't exist then error
+if not squassets then
+  error("§4Missing SquAssets file! Make sure to download that from the GitHub too!§c")
+end
+
 local squapi = {}
 
 
