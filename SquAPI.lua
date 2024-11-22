@@ -819,6 +819,12 @@ function squapi.smoothHead:new(element, strength, tilt, speed, keepOriginalHeadP
         end
 	end
 
+    self.lerp = {
+        prev    = {},
+        target  = {},
+        currPos = {}
+    }
+
 	self.tilt = tilt or 0.1
 	if keepOriginalHeadPos == nil then keepOriginalHeadPos = true end
     self.keepOriginalHeadPos = keepOriginalHeadPos
@@ -863,16 +869,20 @@ function squapi.smoothHead:new(element, strength, tilt, speed, keepOriginalHeadP
             self.headRot[1] = self.headRot[1] + (vanillaHeadRot[1] - self.headRot[1])*self.speed
             self.headRot[2] = self.headRot[2] + (vanillaHeadRot[2] - self.headRot[2])*self.speed
             self.headRot[3] = self.headRot[2]*self.tilt
+            for i = 1, #element do
+                self.lerp.prev[i] = self.lerp.target[i] or vec(0, 0, 0)
+                self.lerp.target[i] = (self.headRot*self.strength[i])-self.offset/#self.element
+            end
         end
     end
 
 	function self:render(dt, context) 
         if self.enabled then
-            dt = dt/5
+            for i = 1, #element do
+                self.lerp.currPos[i] = math.lerp(self.lerp.prev[i], self.lerp.target[i], dt)
+            end
             for i, v in pairs(self.element) do
-                local c = self.element[i]:getOffsetRot()
-                local target = (self.headRot*self.strength[i])-self.offset/#self.element
-                self.element[i]:setOffsetRot(math.lerp(c[1], target[1], dt), math.lerp(c[2], target[2], dt), math.lerp(c[3], target[3], dt))
+                self.element[i]:setOffsetRot(self.lerp.currPos[i])
 
                 -- Better Combat SquAPI Compatibility created by @jimmyhelp and @foxy2526 on Discord
                 if renderer:isFirstPerson() and context == "RENDER" then
