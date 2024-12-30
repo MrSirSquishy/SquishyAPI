@@ -72,7 +72,7 @@ squapi.autoFunctionUpdates = true
 
 
 ---Contains all registered tails
----@class SquAPI.Tail.*INTERNAL*
+---@class SquAPI.Tails
 ---@field private [number] SquAPI.Tail
 squapi.tails = {}
 ---@class SquAPI.Tail
@@ -179,7 +179,7 @@ function squapi.tail:new(tailSegmentList, idleXMovement, idleYMovement, idleXSpe
 
   ---Run render function on tail
   ---@param dt number Tick delta
-  function _self:render(dt)
+  function _self:render(dt, _)
     local pose = player:getPose()
     if pose ~= "SLEEPING" then
       for i, tail in ipairs(_self.tailSegmentList) do
@@ -199,7 +199,7 @@ function squapi.tail:new(tailSegmentList, idleXMovement, idleYMovement, idleXSpe
 end
 
 ---Contains all registered ears
----@class SquAPI.Ear.*INTERNAL*
+---@class SquAPI.Ears
 ---@field private [number] SquAPI.Ear
 squapi.ears = {}
 ---@class SquAPI.Ear
@@ -255,6 +255,14 @@ function squapi.ear:new(leftEar, rightEar, rangeMultiplier, horizontalEars, bend
   ---Enable this ear
   function _self:enable()
     _self.enabled = true
+  end
+
+  ---Sets if this ear is enabled
+  ---@param bool boolean
+  function _self:setEnabled(bool)
+    assert(type(bool) == "boolean",
+      "§4setEnabled must be set to a boolean.§c")
+    _self.enabled = bool
   end
 
   -- UPDATES -------------------------------------------------------------------------
@@ -314,7 +322,7 @@ function squapi.ear:new(leftEar, rightEar, rangeMultiplier, horizontalEars, bend
 
   ---Run render function on ear
   ---@param dt number Tick delta
-  function _self:render(dt)
+  function _self:render(dt, _)
     if _self.enabled then
       _self.eary:berp(_self.targets[1], dt)
       _self.earx:berp(_self.targets[2], dt)
@@ -347,6 +355,7 @@ end
 ---@param uncrouch? Animation The animation to play when you uncrouch. make sure to set to "play once" and set to override. If it's just a pose with no actual animation, than you should leave this blank or set to nil.
 ---@param crawl? Animation Same as crouch but for crawling.
 ---@param uncrawl? Animation Same as uncrouch but for crawling.
+---@class SquAPI.Crouch
 function squapi.crouch(crouch, uncrouch, crawl, uncrawl)
   local oldstate = "STANDING"
   function events.render()
@@ -382,7 +391,7 @@ function squapi.crouch(crouch, uncrouch, crawl, uncrawl)
 end
 
 ---Contains all registered bewbs
----@class SquAPI.Bewb.*INTERNAL*
+---@class SquAPI.Bewbs
 ---@field private [number] SquAPI.Bewb
 squapi.bewbs = {}
 ---@class SquAPI.Bewb
@@ -434,6 +443,14 @@ function squapi.bewb:new(element, bendability, stiff, bounce, doIdle, idleStreng
     _self.enabled = true
   end
 
+  ---Sets if these bewbs are enabled
+  ---@param bool boolean
+  function _self:setEnabled(bool)
+    assert(type(bool) == "boolean",
+      "§4setEnabled must be set to a boolean.§c")
+    _self.enabled = bool
+  end
+
   -- UPDATE -------------------------------------------------------------------------
 
   _self.oldpose = "STANDING"
@@ -467,7 +484,7 @@ function squapi.bewb:new(element, bendability, stiff, bounce, doIdle, idleStreng
 
   ---Run render function on bewbs
   ---@param dt number Tick delta
-  function _self:render(dt)
+  function _self:render(dt, _)
     _self.element:setOffsetRot(_self.bewby:berp(_self.target, dt), 0, 0)
   end
 
@@ -476,7 +493,7 @@ function squapi.bewb:new(element, bendability, stiff, bounce, doIdle, idleStreng
 end
 
 ---Contains all registered randimations
----@class SquAPI.Randimation.*INTERNAL*
+---@class SquAPI.Randimations
 ---@field private [number] SquAPI.Randimation
 squapi.randimations = {}
 ---@class SquAPI.Randimation
@@ -516,6 +533,14 @@ function squapi.randimation:new(animation, chanceRange, isBlink)
     _self.enabled = true
   end
 
+  ---Sets if this randimation is enabled
+  ---@param bool boolean
+  function _self:setEnabled(bool)
+    assert(type(bool) == "boolean",
+      "§4setEnabled must be set to a boolean.§c")
+    _self.enabled = bool
+  end
+
   -- UPDATES -------------------------------------------------------------------------
 
   ---Run tick function on randimation
@@ -530,7 +555,7 @@ function squapi.randimation:new(animation, chanceRange, isBlink)
 end
 
 ---Contains all registered eyes
----@class SquAPI.Eye.*INTERNAL*
+---@class SquAPI.Eyes
 ---@field private [number] SquAPI.Eye
 squapi.eyes = {}
 ---@class SquAPI.Eye
@@ -586,6 +611,14 @@ function squapi.eye:new(element, leftDistance, rightDistance, upDistance, downDi
     _self.enabled = true
   end
 
+  ---Sets if this eye is enabled
+  ---@param bool boolean
+  function _self:setEnabled(bool)
+    assert(type(bool) == "boolean",
+      "§4setEnabled must be set to a boolean.§c")
+    _self.enabled = bool
+  end
+
   ---Resets this eye's position to its initial posistion
   function _self:zero()
     _self.x, _self.y = 0, 0
@@ -611,7 +644,7 @@ function squapi.eye:new(element, leftDistance, rightDistance, upDistance, downDi
 
   ---Run render function on eye
   ---@param dt number Tick delta
-  function _self:render(dt)
+  function _self:render(dt, _)
     local c = element:getPos()
     if _self.switchValues then
       element:setPos(0, math.lerp(c[2], _self.y, dt), math.lerp(c[3], -_self.x, dt))
@@ -627,7 +660,7 @@ function squapi.eye:new(element, leftDistance, rightDistance, upDistance, downDi
 end
 
 ---Contains all registered hover points
----@class SquAPI.HoverPoint.*INTERNAL*
+---@class SquAPI.HoverPoints
 ---@field private [number] SquAPI.HoverPoint
 squapi.hoverPoints = {}
 ---@class SquAPI.HoverPoint
@@ -675,6 +708,14 @@ function squapi.hoverPoint:new(element, springStrength, mass, resistance, rotati
   ---Enables this hover point
   function _self:enable()
     _self.enabled = true
+  end
+
+  ---Sets if this hover point is enabled
+  ---@param bool boolean
+  function _self:setEnabled(bool)
+    assert(type(bool) == "boolean",
+      "§4setEnabled must be set to a boolean.§c")
+    _self.enabled = bool
   end
 
   ---Resets this hover point's position to its initial position
@@ -753,7 +794,7 @@ function squapi.hoverPoint:new(element, springStrength, mass, resistance, rotati
 
   ---Run render function on hover point
   ---@param dt number Tick delta
-  function _self:render(dt)
+  function _self:render(dt, _)
     _self.element:setPos(
       math.lerp(_self.element:getPos(), _self.pos * 16, dt / 2)
     )
@@ -766,7 +807,7 @@ function squapi.hoverPoint:new(element, springStrength, mass, resistance, rotati
 end
 
 ---Contains all registered legs
----@class SquAPI.Leg.*INTERNAL*
+---@class SquAPI.Legs
 ---@field private [number] SquAPI.Leg
 squapi.legs = {}
 ---@class SquAPI.Leg
@@ -810,7 +851,7 @@ function squapi.leg:new(element, strength, isRight, keepPosition)
 end
 
 ---Contains all registered arms
----@class SquAPI.Arm.*INTERNAL*
+---@class SquAPI.Arms
 ---@field private [number] SquAPI.Arm
 squapi.arms = {}
 ---@class SquAPI.Arm
@@ -855,7 +896,7 @@ function squapi.arm:new(element, strength, isRight, keepPosition)
 end
 
 ---Contains all registered smooth heads
----@class SquAPI.SmoothHead.*INTERNAL*
+---@class SquAPI.SmoothHeads
 ---@field private [number] SquAPI.SmoothHead
 squapi.smoothHeads = {}
 ---@class SquAPI.SmoothHead
@@ -951,6 +992,14 @@ function squapi.smoothHead:new(element, strength, tilt, speed, keepOriginalHeadP
     _self.enabled = true
   end
 
+  ---Sets if this smooth head is enabled
+  ---@param bool boolean
+  function _self:setEnabled(bool)
+    assert(type(bool) == "boolean",
+      "§4setEnabled must be set to a boolean.§c")
+    _self.enabled = bool
+  end
+
   ---Resets this smooth head's position and rotation to their initial values
   function _self:zero()
     for _, v in ipairs(_self.element) do
@@ -1006,7 +1055,7 @@ function squapi.smoothHead:new(element, strength, tilt, speed, keepOriginalHeadP
 end
 
 ---Contains all registered bounce walks
----@class SquAPI.BounceWalk.*INTERNAL*
+---@class SquAPI.BounceWalks
 ---@field private [number] SquAPI.BounceWalk
 squapi.bounceWalks = {}
 ---@class SquAPI.BounceWalk
@@ -1043,10 +1092,18 @@ function squapi.bounceWalk:new(model, bounceMultiplier)
     _self.enabled = true
   end
 
+  ---Sets if this bounce walk is enabled
+  ---@param bool boolean
+  function _self:setEnabled(bool)
+    assert(type(bool) == "boolean",
+      "§4setEnabled must be set to a boolean.§c")
+    _self.enabled = bool
+  end
+
   -- UPDATES -------------------------------------------------------------------------
 
   ---Run render function on bounce walk
-  function _self:render(dt)
+  function _self:render(dt, _)
     local pose = player:getPose()
     if _self.enabled and (pose == "STANDING" or pose == "CROUCHING") then
       local leftlegrot = vanilla_model.LEFT_LEG:getOriginRot()[1]
@@ -1066,7 +1123,7 @@ function squapi.bounceWalk:new(model, bounceMultiplier)
 end
 
 ---Contains all registered taurs
----@class SquAPI.Taur.*INTERNAL*
+---@class SquAPI.Taurs
 ---@field private [number] SquAPI.Taur
 squapi.taurs = {}
 ---@class SquAPI.Taur
@@ -1108,6 +1165,14 @@ function squapi.taur:new(taurBody, frontLegs, backLegs)
     _self.enabled = true
   end
 
+  ---Sets if this taur is enabled
+  ---@param bool boolean
+  function _self:setEnabled(bool)
+    assert(type(bool) == "boolean",
+      "§4setEnabled must be set to a boolean.§c")
+    _self.enabled = bool
+  end
+
   -- UPDATES -------------------------------------------------------------------------
 
   ---Run tick function on taur
@@ -1119,7 +1184,7 @@ function squapi.taur:new(taurBody, frontLegs, backLegs)
 
   ---Run render function on taur
   ---@param dt number Tick delta
-  function _self:render(dt)
+  function _self:render(dt, _)
     if _self.enabled then
       _self.taur:berp(_self.target, dt / 2)
       local pose = player:getPose()
@@ -1149,7 +1214,7 @@ function squapi.taur:new(taurBody, frontLegs, backLegs)
 end
 
 ---Contains all registered first person hands
----@class SquAPI.FPHand.*INTERNAL*
+---@class SquAPI.FPHands
 ---@field private [number] SquAPI.FPHand
 squapi.FPHands = {}
 ---@class SquAPI.FPHand
@@ -1194,7 +1259,7 @@ function squapi.FPHand:new(element, x, y, z, scale, onlyVisibleInFP)
 
   ---Run render function on this first person hand
   ---@param context Event.Render.context
-  function _self:render(context)
+  function _self:render(_, context)
     if context == "FIRST_PERSON" then
       if _self.onlyVisibleInFP then
         _self.element:setVisible(true)
@@ -1219,6 +1284,7 @@ end
 ---@param framePercent number What percent width/height the uv takes up of the whole texture. For example: if there is a 100x100 texture, and the uv is 20x20, this will be .20
 ---@param slowFactor? number Defaults to `1`, increase this to slow down the animation.
 ---@param vertical? boolean Defaults to `false`, set to true if you'd like the animation frames to go down instead of right.
+---@class SquAPI.AnimateTexture
 function squapi.animateTexture(element, numberOfFrames, framePercent, slowFactor, vertical)
   assert(element,
     "§4Your model path for animateTexture is incorrect.§c")
@@ -1249,14 +1315,14 @@ if squapi.autoFunctionUpdates then
 
   function events.render(dt, context)
     for _, v in ipairs(squapi.smoothHeads) do v:render(dt, context) end
-    for _, v in ipairs(squapi.FPHands) do v:render(context) end
-    for _, v in ipairs(squapi.bounceWalks) do v:render(dt) end
-    for _, v in ipairs(squapi.eyes) do v:render(dt) end
-    for _, v in ipairs(squapi.bewbs) do v:render(dt) end
-    for _, v in ipairs(squapi.hoverPoints) do v:render(dt) end
-    for _, v in ipairs(squapi.ears) do v:render(dt) end
-    for _, v in ipairs(squapi.tails) do v:render(dt) end
-    for _, v in ipairs(squapi.taurs) do v:render(dt) end
+    for _, v in ipairs(squapi.FPHands) do v:render(dt, context) end
+    for _, v in ipairs(squapi.bounceWalks) do v:render(dt, context) end
+    for _, v in ipairs(squapi.eyes) do v:render(dt, context) end
+    for _, v in ipairs(squapi.bewbs) do v:render(dt, context) end
+    for _, v in ipairs(squapi.hoverPoints) do v:render(dt, context) end
+    for _, v in ipairs(squapi.ears) do v:render(dt, context) end
+    for _, v in ipairs(squapi.tails) do v:render(dt, context) end
+    for _, v in ipairs(squapi.taurs) do v:render(dt, context) end
   end
 end
 
