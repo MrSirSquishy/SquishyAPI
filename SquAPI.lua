@@ -867,8 +867,8 @@ squapi.smoothHead.__index = squapi.smoothHead
 ---@param strength? number|table<number> Defaults to `1`, the target rotation is multiplied by this factor. If you want a smooth neck or torso, instead of an single number, you can put in a table(imagine it like {strength1, strength2, etc.}). This will apply each strength to each respective element.(make sure it is the same length as your element table)
 ---@param tilt? number Defaults to `0.1`, for context the smooth head applies a slight tilt to the head as it's rotated toward the side, this controls the strength of that tilt.
 ---@param speed? number Defaults to `1`, how fast the head will rotate toward the target rotation.
----@param keepOriginalHeadPos? boolean|number Defaults to `true`, when true the heads position will follow the vanilla head position. For example when crouching the head will shift down to follow. set to false to disable.
----@param fixPortrait? boolean Defaults to `true`
+---@param keepOriginalHeadPos? boolean|number Defaults to `true`, when true the heads position will follow the vanilla head position. For example when crouching the head will shift down to follow. If set to a number, changes which modelpart gets moved when doing actions such as crouching. This should normally be set to the neck modelpart.
+---@param fixPortrait? boolean Defaults to `true`, sets whether or not the portrait should be applied if a group named "head" is found in the elements list
 function squapi.smoothHead:new(element, strength, tilt, speed, keepOriginalHeadPos, fixPortrait)
   ---@class SquAPI.SmoothHead
   local _self = setmetatable({}, squapi.smoothHead)
@@ -908,10 +908,18 @@ function squapi.smoothHead:new(element, strength, tilt, speed, keepOriginalHeadP
 
   if fixPortrait == nil then fixPortrait = true end
   if fixPortrait then
-    for _, part in ipairs(element) do
-      if squassets.caseInsensitiveFind(part, "head") then
-        part:copy("_squapi-portrait"):moveTo(models):setParentType("Portrait"):setPos(-part:getPivot())
-        break
+    if type(element) == "table" then
+      for _, part in ipairs(element) do
+        if squassets.caseInsensitiveFind(part, "head") then
+          part:copy("_squapi-portrait"):moveTo(models):setParentType("Portrait")
+              :setPos(-part:getPivot())
+          break
+        end
+      end
+    elseif type(element) == "ModelPart" and element:getType() == "GROUP" then
+      if squassets.caseInsensitiveFind(element, "head") then
+        element:copy("_squapi-portrait"):moveTo(models):setParentType("Portrait")
+            :setPos(-element:getPivot())
       end
     end
   end
@@ -1037,7 +1045,7 @@ function squapi.bounceWalk:new(model, bounceMultiplier)
 
   -- UPDATES -------------------------------------------------------------------------
 
-    ---Run render function on bounce walk
+  ---Run render function on bounce walk
   function _self:render(dt)
     local pose = player:getPose()
     if _self.enabled and (pose == "STANDING" or pose == "CROUCHING") then
