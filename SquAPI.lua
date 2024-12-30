@@ -145,6 +145,7 @@ function squapi.tail:new(tailSegmentList, idleXMovement, idleYMovement, idleXSpe
   _self.oldBodyRot = 0
   _self.bodyRotSpeed = 0
 
+  ---Run tick function on tail
   function _self:tick()
     _self.oldBodyRot = _self.currentBodyRot
     _self.currentBodyRot = player:getBodyYaw()
@@ -176,6 +177,8 @@ function squapi.tail:new(tailSegmentList, idleXMovement, idleYMovement, idleXSpe
     end
   end
 
+  ---Run render function on tail
+  ---@param dt number Tick delta
   function _self:render(dt)
     local pose = player:getPose()
     if pose ~= "SLEEPING" then
@@ -239,14 +242,17 @@ function squapi.ear:new(leftEar, rightEar, rangeMultiplier, horizontalEars, bend
   -- CONTROL -------------------------------------------------------------------------
 
   _self.enabled = true
+  ---Toggle this ear on or off
   function _self:toggle()
     _self.enabled = not _self.enabled
   end
 
+  ---Disable this ear
   function _self:disable()
     _self.enabled = false
   end
 
+  ---Enable this ear
   function _self:enable()
     _self.enabled = true
   end
@@ -258,6 +264,8 @@ function squapi.ear:new(leftEar, rightEar, rangeMultiplier, horizontalEars, bend
   _self.earz = squassets.BERP:new(earStiffness, earBounce)
   _self.targets = { 0, 0, 0 }
   _self.oldpose = "STANDING"
+
+  ---Run tick function on ear
   function _self:tick()
     if _self.enabled then
       local vel = math.min(math.max(-0.75, squassets.forwardVel()), 0.75)
@@ -304,6 +312,8 @@ function squapi.ear:new(leftEar, rightEar, rangeMultiplier, horizontalEars, bend
     end
   end
 
+  ---Run render function on ear
+  ---@param dt number Tick delta
   function _self:render(dt)
     if _self.enabled then
       _self.eary:berp(_self.targets[1], dt)
@@ -371,7 +381,7 @@ function squapi.crouch(crouch, uncrouch, crawl, uncrawl)
   end
 end
 
----Contains all registered ears
+---Contains all registered bewbs
 ---@class SquAPI.Bewb.*INTERNAL*
 ---@field private [number] SquAPI.Bewb
 squapi.bewbs = {}
@@ -409,14 +419,17 @@ function squapi.bewb:new(element, bendability, stiff, bounce, doIdle, idleStreng
   -- CONTROL -------------------------------------------------------------------------
 
   _self.enabled = true
+  ---Toggle these bewbs on or off
   function _self:toggle()
     _self.enabled = not _self.enabled
   end
 
+  ---Disable these bewbs
   function _self:disable()
     _self.enabled = false
   end
 
+  ---Enable these bewbs
   function _self:enable()
     _self.enabled = true
   end
@@ -424,6 +437,7 @@ function squapi.bewb:new(element, bendability, stiff, bounce, doIdle, idleStreng
   -- UPDATE -------------------------------------------------------------------------
 
   _self.oldpose = "STANDING"
+  ---Run tick function on bewbs
   function _self:tick()
     if _self.enabled then
       local vel = squassets.forwardVel()
@@ -451,6 +465,8 @@ function squapi.bewb:new(element, bendability, stiff, bounce, doIdle, idleStreng
     end
   end
 
+  ---Run render function on bewbs
+  ---@param dt number Tick delta
   function _self:render(dt)
     _self.element:setOffsetRot(_self.bewby:berp(_self.target, dt), 0, 0)
   end
@@ -485,20 +501,24 @@ function squapi.randimation:new(animation, chanceRange, isBlink)
   -- CONTROL -------------------------------------------------------------------------
 
   _self.enabled = true
+  ---Toggle this randimation on or off
   function _self:toggle()
     _self.enabled = not _self.enabled
   end
 
+  ---Disable this randimation
   function _self:disable()
     _self.enabled = false
   end
 
+  ---Enable this randimation
   function _self:enable()
     _self.enabled = true
   end
 
   -- UPDATES -------------------------------------------------------------------------
 
+  ---Run tick function on randimation
   function events.tick()
     if _self.enabled and (not _self.isBlink or player:getPose() ~= "SLEEPING") and math.random(0, _self.chanceRange) == 0 and _self.animation:isStopped() then
       _self.animation:play()
@@ -544,31 +564,36 @@ function squapi.eye:new(element, leftDistance, rightDistance, upDistance, downDi
 
   -- CONTROL -------------------------------------------------------------------------
 
-  --For funzies if you want to change the scale of the eyes you can use this.(lerps to scale)
+  ---For funzies if you want to change the scale of the eyes you can use this. (lerps to scale)
+  ---@param scale number Scale multiplier
   function _self:setEyeScale(scale)
     _self.eyeScale = scale
   end
 
   _self.enabled = true
+  ---Toggles this eye on or off
   function _self:toggle()
     _self.enabled = not _self.enabled
   end
 
+  ---Disables this eye
   function _self:disable()
     _self.enabled = false
   end
 
+  ---Enables this eye
   function _self:enable()
     _self.enabled = true
   end
 
-  --resets position
+  ---Resets this eye's position to its initial posistion
   function _self:zero()
     _self.x, _self.y = 0, 0
   end
 
   -- UPDATES -------------------------------------------------------------------------
 
+  ---Run tick function on eye
   function _self:tick()
     if _self.enabled then
       local headrot = squassets.getHeadRot()
@@ -584,6 +609,8 @@ function squapi.eye:new(element, leftDistance, rightDistance, upDistance, downDi
     end
   end
 
+  ---Run render function on eye
+  ---@param dt number Tick delta
   function _self:render(dt)
     local c = element:getPos()
     if _self.switchValues then
@@ -635,19 +662,22 @@ function squapi.hoverPoint:new(element, springStrength, mass, resistance, rotati
   -- CONTROL -------------------------------------------------------------------------
 
   _self.enabled = true
+  ---Toggles this hover point on or off
   function _self:toggle()
     _self.enabled = not _self.enabled
   end
 
+  ---Disables this hover point
   function _self:disable()
     _self.enabled = false
   end
 
+  ---Enables this hover point
   function _self:enable()
     _self.enabled = true
   end
 
-  -- returns to normal position
+  ---Resets this hover point's position to its initial position
   function _self:reset()
     local yaw = math.rad(player:getBodyYaw())
     local sin, cos = math.sin(yaw), math.cos(yaw)
@@ -668,6 +698,7 @@ function squapi.hoverPoint:new(element, springStrength, mass, resistance, rotati
   _self.init = true
   _self.delay = 0
 
+  ---Run tick function on hover point
   function _self:tick()
     if _self.enabled then
       if _self.init then
@@ -720,6 +751,8 @@ function squapi.hoverPoint:new(element, springStrength, mass, resistance, rotati
     end
   end
 
+  ---Run render function on hover point
+  ---@param dt number Tick delta
   function _self:render(dt)
     _self.element:setPos(
       math.lerp(_self.element:getPos(), _self.pos * 16, dt / 2)
@@ -758,6 +791,9 @@ function squapi.leg:new(element, strength, isRight, keepPosition)
 
   -- UPDATES -------------------------------------------------------------------------
 
+  ---Returns the vanilla leg rotation and position vectors
+  ---@return Vector3 #Vanilla leg rotation
+  ---@return Vector3 #Vanilla leg position
   function _self:getVanilla()
     if _self.isRight then
       _self.rot = vanilla_model.RIGHT_LEG:getOriginRot()
@@ -801,6 +837,9 @@ function squapi.arm:new(element, strength, isRight, keepPosition)
 
   -- UPDATES -------------------------------------------------------------------------
 
+  ---Returns the vanilla arm rotation and position vectors
+  ---@return Vector3 #Vanilla arm rotation
+  ---@return Vector3 #Vanilla arm position
   function _self:getVanilla()
     if _self.isRight then
       _self.rot = vanilla_model.RIGHT_ARM:getOriginRot()
@@ -880,24 +919,31 @@ function squapi.smoothHead:new(element, strength, tilt, speed, keepOriginalHeadP
   -- CONTROL -------------------------------------------------------------------------
 
 
-  -- Applies an offset to the heads rotation to more easily modify it. Applies as a vector.(for multisegments it will modify the target rotation)
+  ---Applies an offset to the heads rotation to more easily modify it. Applies as a vector.(for multisegments it will modify the target rotation)
+  ---@param xRot number X rotation
+  ---@param yRot number Y rotation
+  ---@param zRot number Z rotation
   function _self:setOffset(xRot, yRot, zRot)
     _self.offset = vec(xRot, yRot, zRot)
   end
 
   _self.enabled = true
+  ---Toggles this smooth head on or off
   function _self:toggle()
     _self.enabled = not _self.enabled
   end
 
+  ---Disables this smooth head
   function _self:disable()
     _self.enabled = false
   end
 
+  ---Enables this smooth head
   function _self:enable()
     _self.enabled = true
   end
 
+  ---Resets this smooth head's position and rotation to their initial values
   function _self:zero()
     for _, v in ipairs(_self.element) do
       v:setPos(0, 0, 0)
@@ -907,6 +953,8 @@ function squapi.smoothHead:new(element, strength, tilt, speed, keepOriginalHeadP
   end
 
   -- UPDATE -------------------------------------------------------------------------
+
+  ---Run tick function on smooth head
   function _self:tick()
     if _self.enabled then
       local vanillaHeadRot = squassets.getHeadRot()
@@ -917,6 +965,9 @@ function squapi.smoothHead:new(element, strength, tilt, speed, keepOriginalHeadP
     end
   end
 
+  ---Run render function on smooth head
+  ---@param dt number Tick delta
+  ---@param context Event.Render.context
   function _self:render(dt, context)
     if _self.enabled then
       dt = dt / 5
@@ -969,20 +1020,24 @@ function squapi.bounceWalk:new(model, bounceMultiplier)
   -- CONTROL -------------------------------------------------------------------------
 
   _self.enabled = true
+  ---Toggle this bounce walk on or off
   function _self:toggle()
     _self.enabled = not _self.enabled
   end
 
+  ---Disable this bounce walk
   function _self:disable()
     _self.enabled = false
   end
 
+  ---Enable this bounce walk
   function _self:enable()
     _self.enabled = true
   end
 
   -- UPDATES -------------------------------------------------------------------------
 
+    ---Run render function on bounce walk
   function _self:render(dt)
     local pose = player:getPose()
     if _self.enabled and (pose == "STANDING" or pose == "CROUCHING") then
@@ -1030,26 +1085,32 @@ function squapi.taur:new(taurBody, frontLegs, backLegs)
 
   -- CONTROL -------------------------------------------------------------------------
   _self.enabled = true
+  ---Toggle this taur on or off
   function _self:toggle()
     _self.enabled = not _self.enabled
   end
 
+  ---Disable this taur
   function _self:disable()
     _self.enabled = false
   end
 
+  ---Enable this taur
   function _self:enable()
     _self.enabled = true
   end
 
   -- UPDATES -------------------------------------------------------------------------
 
+  ---Run tick function on taur
   function _self:tick()
     if _self.enabled then
       _self.target = math.min(math.max(-30, squassets.verticalVel() * 40), 45)
     end
   end
 
+  ---Run render function on taur
+  ---@param dt number Tick delta
   function _self:render(dt)
     if _self.enabled then
       _self.taur:berp(_self.target, dt / 2)
@@ -1111,6 +1172,10 @@ function squapi.FPHand:new(element, x, y, z, scale, onlyVisibleInFP)
 
   -- CONTROL -------------------------------------------------------------------------
 
+  ---Set this first person hand's position
+  ---@param _x number X position
+  ---@param _y number Y position
+  ---@param _z number Z position
   function _self:updatePos(_x, _y, _z)
     _self.x = _x
     _self.y = _y
@@ -1118,7 +1183,10 @@ function squapi.FPHand:new(element, x, y, z, scale, onlyVisibleInFP)
   end
 
   -- UPDATES -------------------------------------------------------------------------
-  function _self:render(_, context)
+
+  ---Run render function on this first person hand
+  ---@param context Event.Render.context
+  function _self:render(context)
     if context == "FIRST_PERSON" then
       if _self.onlyVisibleInFP then
         _self.element:setVisible(true)
@@ -1173,7 +1241,7 @@ if squapi.autoFunctionUpdates then
 
   function events.render(dt, context)
     for _, v in ipairs(squapi.smoothHeads) do v:render(dt, context) end
-    for _, v in ipairs(squapi.FPHands) do v:render(dt, context) end
+    for _, v in ipairs(squapi.FPHands) do v:render(context) end
     for _, v in ipairs(squapi.bounceWalks) do v:render(dt) end
     for _, v in ipairs(squapi.eyes) do v:render(dt) end
     for _, v in ipairs(squapi.bewbs) do v:render(dt) end
