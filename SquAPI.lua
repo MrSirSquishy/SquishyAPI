@@ -131,6 +131,17 @@ function squapi.tail:new(tailSegmentList, idleXMovement, idleYMovement, idleXSpe
 
     -- CONTROL -------------------------------------------------------------------------
 
+    self.enabled = true
+    function self:toggle()
+		self.enabled = not self.enabled
+	end
+    function self:disable()
+        self.enabled = false
+    end
+    function self:enable()
+        self.enabled = true
+    end
+
     -- UPDATES -------------------------------------------------------------------------
 	
 	self.currentBodyRot = 0
@@ -138,47 +149,55 @@ function squapi.tail:new(tailSegmentList, idleXMovement, idleYMovement, idleXSpe
 	self.bodyRotSpeed = 0
 	
     function self:tick()
-		self.oldBodyRot = self.currentBodyRot
-		self.currentBodyRot = player:getBodyYaw()
-		self.bodyRotSpeed = math.max(math.min(self.currentBodyRot-self.oldBodyRot, 20), -20)
+		if self.enabled then
+			self.oldBodyRot = self.currentBodyRot
+			self.currentBodyRot = player:getBodyYaw()
+			self.bodyRotSpeed = math.max(math.min(self.currentBodyRot-self.oldBodyRot, 20), -20)
 
-        local time = world.getTime()
-		local vel = squassets.forwardVel()
-		local yvel = squassets.verticalVel()
-		local svel = squassets.sideVel()
-		local bendStrength = self.bendStrength/(math.abs((yvel*30))+vel*30 + 1)
-        local pose = player:getPose()
+            local time = world.getTime()
+			local vel = squassets.forwardVel()
+			local yvel = squassets.verticalVel()
+			local svel = squassets.sideVel()
+			local bendStrength = self.bendStrength/(math.abs((yvel*30))+vel*30 + 1)
+            local pose = player:getPose()
 	
-        for i = 1, #self.tailSegmentList do
-            self.targets[i][1] = math.sin((time * self.idleXSpeed)/10 - (i)) * self.idleXMovement
-            self.targets[i][2] = math.sin((time * self.idleYSpeed)/10 - (i * self.offsetBetweenSegments) + self.initialMovementOffset) * self.idleYMovement
+            for i = 1, #self.tailSegmentList do
+                self.targets[i][1] = math.sin((time * self.idleXSpeed)/10 - (i)) * self.idleXMovement
+                self.targets[i][2] = math.sin((time * self.idleYSpeed)/10 - (i * self.offsetBetweenSegments) + self.initialMovementOffset) * self.idleYMovement
 
-            self.targets[i][1] = self.targets[i][1] + self.bodyRotSpeed*self.bendStrength + svel*self.bendStrength*40
-			self.targets[i][2] = self.targets[i][2] + yvel * 15 * self.bendStrength - vel*self.bendStrength*15*self.velocityPush
+                self.targets[i][1] = self.targets[i][1] + self.bodyRotSpeed*self.bendStrength + svel*self.bendStrength*40
+				self.targets[i][2] = self.targets[i][2] + yvel * 15 * self.bendStrength - vel*self.bendStrength*15*self.velocityPush
 
-			if i == 1 then
-				if pose == "FALL_FLYING" or pose == "SWIMMING" or player:riptideSpinning() then
-					self.targets[i][2] = self.flyingOffset
-				end	
-			end
-			
-        end
+				if i == 1 then
+					if pose == "FALL_FLYING" or pose == "SWIMMING" or player:riptideSpinning() then
+						self.targets[i][2] = self.flyingOffset
+					end	
+				end
+				
+            end
+		else
+            for i, tail in ipairs(self.tailSegmentList) do
+                tail:setOffsetRot(0, 0, 0)
+            end
+		end
 
 	end
 	
 	function self:render(dt, context)
-        local pose = player:getPose()
-        if pose ~= "SLEEPING" then
-            for i, tail in ipairs(self.tailSegmentList) do
-                tail:setOffsetRot(
-                    self.berps[i][2]:berp(self.targets[i][2], dt),
-                    self.berps[i][1]:berp(self.targets[i][1], dt),
-                    0
-                )
+        if self.enabled then
+            local pose = player:getPose()
+            if pose ~= "SLEEPING" then
+                for i, tail in ipairs(self.tailSegmentList) do
+                    tail:setOffsetRot(
+                        self.berps[i][2]:berp(self.targets[i][2], dt),
+                        self.berps[i][1]:berp(self.targets[i][1], dt),
+                        0
+                    )
+                end
+            else
+                
             end
-        else
-            
-        end
+		end
 	end
 
 
