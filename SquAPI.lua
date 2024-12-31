@@ -182,7 +182,7 @@ function squapi.tail:new(tailSegmentList, idleXMovement, idleYMovement, idleXSpe
 	end
 
 
-    table.insert(squapi.ears, self)
+    table.insert(squapi.tails, self)
     return self
 end
 
