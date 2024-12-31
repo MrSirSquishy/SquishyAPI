@@ -38,7 +38,7 @@
 
 -- Locates SquAssets, if it exists
 -- Written by FOX
----@class SquAPI.*ASSETS*
+---@class SquAssets
 local squassets
 for _, path in ipairs(listFiles("/", true)) do
   if string.find(path, "SquAssets") then squassets = require(path) end
@@ -72,10 +72,8 @@ squapi.autoFunctionUpdates = true
 
 
 ---Contains all registered tails
----@class SquAPI.Tails
----@field private [number] SquAPI.Tail
+---@type SquAPI.Tail[]
 squapi.tails = {}
----@class SquAPI.Tail
 squapi.tail = {}
 squapi.tail.__index = squapi.tail
 
@@ -199,10 +197,8 @@ function squapi.tail:new(tailSegmentList, idleXMovement, idleYMovement, idleXSpe
 end
 
 ---Contains all registered ears
----@class SquAPI.Ears
----@field private [number] SquAPI.Ear
+---@type SquAPI.Ear[]
 squapi.ears = {}
----@class SquAPI.Ear
 squapi.ear = {}
 squapi.ear.__index = squapi.ear
 
@@ -391,10 +387,8 @@ function squapi.crouch(crouch, uncrouch, crawl, uncrawl)
 end
 
 ---Contains all registered bewbs
----@class SquAPI.Bewbs
----@field private [number] SquAPI.Bewb
+---@type SquAPI.Bewb[]
 squapi.bewbs = {}
----@class SquAPI.Bewb
 squapi.bewb = {}
 squapi.bewb.__index = squapi.bewb
 
@@ -493,10 +487,8 @@ function squapi.bewb:new(element, bendability, stiff, bounce, doIdle, idleStreng
 end
 
 ---Contains all registered randimations
----@class SquAPI.Randimations
----@field private [number] SquAPI.Randimation
+---@type SquAPI.Randimation[]
 squapi.randimations = {}
----@class SquAPI.Randimation
 squapi.randimation = {}
 squapi.randimation.__index = squapi.randimation
 
@@ -555,10 +547,8 @@ function squapi.randimation:new(animation, chanceRange, isBlink)
 end
 
 ---Contains all registered eyes
----@class SquAPI.Eyes
----@field private [number] SquAPI.Eye
+---@type SquAPI.Eye[]
 squapi.eyes = {}
----@class SquAPI.Eye
 squapi.eye = {}
 squapi.eye.__index = squapi.eye
 
@@ -660,10 +650,8 @@ function squapi.eye:new(element, leftDistance, rightDistance, upDistance, downDi
 end
 
 ---Contains all registered hover points
----@class SquAPI.HoverPoints
----@field private [number] SquAPI.HoverPoint
+---@type SquAPI.HoverPoint[]
 squapi.hoverPoints = {}
----@class SquAPI.HoverPoint
 squapi.hoverPoint = {}
 squapi.hoverPoint.__index = squapi.hoverPoint
 
@@ -807,10 +795,8 @@ function squapi.hoverPoint:new(element, springStrength, mass, resistance, rotati
 end
 
 ---Contains all registered legs
----@class SquAPI.Legs
----@field private [number] SquAPI.Leg
+---@type SquAPI.Leg[]
 squapi.legs = {}
----@class SquAPI.Leg
 squapi.leg = {}
 squapi.leg.__index = squapi.leg
 
@@ -851,10 +837,8 @@ function squapi.leg:new(element, strength, isRight, keepPosition)
 end
 
 ---Contains all registered arms
----@class SquAPI.Arms
----@field private [number] SquAPI.Arm
+---@type SquAPI.Arm[]
 squapi.arms = {}
----@class SquAPI.Arm
 squapi.arm = {}
 squapi.arm.__index = squapi.arm
 
@@ -896,10 +880,8 @@ function squapi.arm:new(element, strength, isRight, keepPosition)
 end
 
 ---Contains all registered smooth heads
----@class SquAPI.SmoothHeads
----@field private [number] SquAPI.SmoothHead
+---@type SquAPI.SmoothHead[]
 squapi.smoothHeads = {}
----@class SquAPI.SmoothHead
 squapi.smoothHead = {}
 squapi.smoothHead.__index = squapi.smoothHead
 
@@ -1055,10 +1037,8 @@ function squapi.smoothHead:new(element, strength, tilt, speed, keepOriginalHeadP
 end
 
 ---Contains all registered bounce walks
----@class SquAPI.BounceWalks
----@field private [number] SquAPI.BounceWalk
+---@type SquAPI.BounceWalk[]
 squapi.bounceWalks = {}
----@class SquAPI.BounceWalk
 squapi.bounceWalk = {}
 squapi.bounceWalk.__index = squapi.bounceWalk
 
@@ -1123,10 +1103,8 @@ function squapi.bounceWalk:new(model, bounceMultiplier)
 end
 
 ---Contains all registered taurs
----@class SquAPI.Taurs
----@field private [number] SquAPI.Taur
+---@type SquAPI.Taur[]
 squapi.taurs = {}
----@class SquAPI.Taur
 squapi.taur = {}
 squapi.taur.__index = squapi.taur
 
@@ -1214,10 +1192,8 @@ function squapi.taur:new(taurBody, frontLegs, backLegs)
 end
 
 ---Contains all registered first person hands
----@class SquAPI.FPHands
----@field private [number] SquAPI.FPHand
+---@type SquAPI.FPHand[]
 squapi.FPHands = {}
----@class SquAPI.FPHand
 squapi.FPHand = {}
 squapi.FPHand.__index = squapi.FPHand
 

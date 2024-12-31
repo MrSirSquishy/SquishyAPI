@@ -23,7 +23,7 @@ You can also make use of these functions, however it's for more advanced scripte
 ]]
 
 
----@class SquAPI.*ASSETS*
+---@class SquAssets
 local squassets = {}
 
 --Useful Calls
