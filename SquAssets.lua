@@ -11,7 +11,7 @@
 -- Author: Squishy
 -- Discord tag: @mrsirsquishy
 
--- Version: 1.0.0
+-- Version: 1.1.0
 -- Legal: ARR
 
 Framework Functions and classes for SquAPI.
@@ -47,9 +47,9 @@ function squassets.getFluid(eyeHeight)
 end
 
 --better isOnGround, taken from the figura wiki
--- function squassets.isOnGround()
---   return world.getBlockState(thisEntity:getPos():add(0, -0.1, 0)):isSolidBlock()
--- end
+function squassets.isOnGround()
+  return world.getBlockState(player:getPos():add(0, -0.1, 0)):isSolidBlock()
+end
 
 -- returns how fast the player moves forward, negative means backward
 function squassets.forwardVel()
@@ -263,107 +263,120 @@ end
 squassets.vanillaElement = {}
 squassets.vanillaElement.__index = squassets.vanillaElement
 function squassets.vanillaElement:new(element, strength, keepPosition)
-  local _self = setmetatable({}, squassets.vanillaElement)
+  local this = setmetatable({}, squassets.vanillaElement)
 
   -- INIT -------------------------------------------------------------------------
-  _self.keepPosition = keepPosition
-  if keepPosition == nil then _self.keepPosition = true end
-  _self.element = element
-  _self.element:setParentType("NONE")
-  _self.strength = strength or 1
-  _self.rot = vec(0, 0, 0)
-  _self.pos = vec(0, 0, 0)
+    self.keepPosition = keepPosition 
+	if keepPosition == nil then self.keepPosition = true end
+	self.element = element
+	self.element:setParentType("NONE")
+    self.strength = strength or 1
+	self.rot = vec(0,0,0)
+	self.pos = vec(0,0,0)
 
-  -- CONTROL -------------------------------------------------------------------------
+    -- CONTROL -------------------------------------------------------------------------
 
-  _self.enabled = true
-  function _self:disable()
-    _self.enabled = false
+	self.enabled = true
+  function self:disable()
+    self.enabled = false
   end
-
-  function _self:enable()
-    _self.enabled = true
+  function self:enable()
+    self.enabled = true
   end
+	function self:toggle()
+		self.enabled = not self.enabled
+	end
 
-  function _self:toggle()
-    _self.enabled = not _self.enabled
-  end
+	self.frozen = false
+	function self:freeze()
+		self.frozen = true
+	end
+	function self:unfreeze()
+		self.frozen = false
+	end
 
   --returns it to normal attributes
-  function _self:zero()
-    _self.element:setOffsetRot(0, 0, 0)
-    _self.element:setPos(0, 0, 0)
+  function self:zero()
+    self.element:setOffsetRot(0, 0, 0)
+		self.element:setPos(0, 0, 0)
   end
-
+	
   --get the current rot/pos
-  function _self:getPos()
-    return _self.pos
-  end
-
-  function _self:getRot()
-    return _self.rot
-  end
+	function self:getPos()
+		return self.pos
+	end
+	function self:getRot()
+		return self.rot
+	end
 
   -- UPDATES -------------------------------------------------------------------------
 
-  function _self:render()
-    if _self.enabled then
-      local rot, pos = _self:getVanilla()
-      _self.element:setOffsetRot(rot * _self.strength)
-      if _self.keepPosition then
-        _self.element:setPos(pos)
-      end
+  function self:render(dt, _)
+    if not self.frozen then
+			if self.enabled then
+				local rot, pos = self:getVanilla()
+				self.element:setOffsetRot(rot*self.strength)
+				if self.keepPosition then
+					self.element:setPos(pos)
+				end
+			else
+				self.element:setOffsetRot(math.lerp(
+					self.element:getOffsetRot(), 0, dt	
+				))
+				self.rot = math.lerp(self.rot, 0, dt)
+				self.pos = math.lerp(self.pos, 0, dt)
+			end
     end
   end
 
-  return _self
+  return this
 end
 
 squassets.BERP3D = {}
 squassets.BERP3D.__index = squassets.BERP3D
 function squassets.BERP3D:new(stiff, bounce, lowerLimit, upperLimit, initialPos, initialVel)
-  local _self = setmetatable({}, squassets.BERP3D)
+  local this = setmetatable({}, squassets.BERP3D)
 
-  _self.stiff = stiff or 0.1
-  _self.bounce = bounce or 0.1
-  _self.pos = initialPos or vec(0, 0, 0)
-  _self.vel = initialVel or vec(0, 0, 0)
-  _self.acc = vec(0, 0, 0)
-  _self.lower = lowerLimit or { nil, nil, nil }
-  _self.upper = upperLimit or { nil, nil, nil }
+  this.stiff = stiff or 0.1
+  this.bounce = bounce or 0.1
+  this.pos = initialPos or vec(0, 0, 0)
+  this.vel = initialVel or vec(0, 0, 0)
+  this.acc = vec(0, 0, 0)
+  this.lower = lowerLimit or { nil, nil, nil }
+  this.upper = upperLimit or { nil, nil, nil }
 
   --target is the target position
   --dt, or delta time, the time between now and the last update(delta from the events.update() function)
   --if you want it to have a different stiff or bounce when run input a different stiff bounce
-  function _self:berp(target, dt, _stiff, _bounce)
+  function this:berp(target, dt, _stiff, _bounce)
     target = target or vec(0, 0, 0)
     dt = dt or 1
 
     for i = 1, 3 do
       --certified bouncy math
-      local dif = (target[i]) - _self.pos[i]
-      _self.acc[i] = ((dif * math.min(_stiff or _self.stiff, 1)) * dt) --based off of spring force F = -kx
-      _self.vel[i] = _self.vel[i] + _self.acc[i]
+      local dif = (target[i]) - this.pos[i]
+      this.acc[i] = ((dif * math.min(_stiff or this.stiff, 1)) * dt) --based off of spring force F = -kx
+      this.vel[i] = this.vel[i] + this.acc[i]
 
       --changes the position, but adds a bouncy bit that both overshoots and decays the movement
-      _self.pos[i] = _self.pos[i] + (dif * (1 - math.min(_bounce or _self.bounce, 1)) + _self.vel[i]) * dt
+      this.pos[i] = this.pos[i] + (dif * (1 - math.min(_bounce or this.bounce, 1)) + this.vel[i]) * dt
 
       --limits range
 
-      if _self.upper[i] and _self.pos[i] > _self.upper[i] then
-        _self.pos[i] = _self.upper[i]
-        _self.vel[i] = 0
-      elseif _self.lower[i] and _self.pos[i] < _self.lower[i] then
-        _self.pos[i] = _self.lower
-        _self.vel[i] = 0
+      if this.upper[i] and this.pos[i] > this.upper[i] then
+        this.pos[i] = this.upper[i]
+        this.vel[i] = 0
+      elseif this.lower[i] and this.pos[i] < this.lower[i] then
+        this.pos[i] = this.lower
+        this.vel[i] = 0
       end
     end
 
     --returns position so that you can immediately apply the position as it is changed.
-    return _self.pos
+    return this.pos
   end
 
-  return _self
+  return this
 end
 
 --stiffness factor, > 0
@@ -372,45 +385,45 @@ end
 squassets.BERP = {}
 squassets.BERP.__index = squassets.BERP
 function squassets.BERP:new(stiff, bounce, lowerLimit, upperLimit, initialPos, initialVel)
-  local _self = setmetatable({}, squassets.BERP)
+  local this = setmetatable({}, squassets.BERP)
 
-  _self.stiff = stiff or 0.1
-  _self.bounce = bounce or 0.1
-  _self.pos = initialPos or 0
-  _self.vel = initialVel or 0
-  _self.acc = 0
-  _self.lower = lowerLimit or nil
-  _self.upper = upperLimit or nil
+  this.stiff = stiff or 0.1
+  this.bounce = bounce or 0.1
+  this.pos = initialPos or 0
+  this.vel = initialVel or 0
+  this.acc = 0
+  this.lower = lowerLimit or nil
+  this.upper = upperLimit or nil
 
   --target is the target position
   --dt, or delta time, the time between now and the last update(delta from the events.update() function)
   --if you want it to have a different stiff or bounce when run input a different stiff bounce
-  function _self:berp(target, dt, _stiff, _bounce)
+  function this:berp(target, dt, _stiff, _bounce)
     dt = dt or 1
 
     --certified bouncy math
-    local dif = (target or 10) - _self.pos
-    _self.acc = ((dif * math.min(_stiff or _self.stiff, 1)) * dt) --based off of spring force F = -kx
-    _self.vel = _self.vel + _self.acc
+    local dif = (target or 10) - this.pos
+    this.acc = ((dif * math.min(_stiff or this.stiff, 1)) * dt) --based off of spring force F = -kx
+    this.vel = this.vel + this.acc
 
     --changes the position, but adds a bouncy bit that both overshoots and decays the movement
-    _self.pos = _self.pos + (dif * (1 - math.min(_bounce or _self.bounce, 1)) + _self.vel) * dt
+    this.pos = this.pos + (dif * (1 - math.min(_bounce or this.bounce, 1)) + this.vel) * dt
 
     --limits range
 
-    if _self.upper and _self.pos > _self.upper then
-      _self.pos = _self.upper
-      _self.vel = 0
-    elseif _self.lower and _self.pos < _self.lower then
-      _self.pos = _self.lower
-      _self.vel = 0
+    if this.upper and this.pos > this.upper then
+      this.pos = this.upper
+      this.vel = 0
+    elseif this.lower and this.pos < this.lower then
+      this.pos = this.lower
+      this.vel = 0
     end
 
     --returns position so that you can immediately apply the position as it is changed.
-    return _self.pos
+    return this.pos
   end
 
-  return _self
+  return this
 end
 
 local _mp_getName = models.getName
