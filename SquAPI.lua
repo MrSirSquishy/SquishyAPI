@@ -17,15 +17,15 @@
 -- @jimmyhelp for errors and just generally helping me get things working.
 -- FOX (@bitslayn) for overhauling annotations and clarity, and for fleshing out some functionality(fr big thanks)
 
--- IMPORTANT FOR NEW USERS!!! READ self!!!
+-- IMPORTANT FOR NEW USERS!!! READ THIS!!!
 
 -- Thank you for using SquAPI! Unless you're experienced and wish to actually modify the functionality
--- of self script, I wouldn't recommend snooping around.
--- Don't know exactly what you're doing? self site contains a guide on how to use!(also linked on github):
+-- of this script, I wouldn't recommend snooping around.
+-- Don't know exactly what you're doing? this site contains a guide on how to use!(also linked on github):
 -- https://mrsirsquishy.notion.site/Squishy-API-Guide-3e72692e93a248b5bd88353c96d8e6c5
 
--- self SquAPI file does have some mini-documentation on paramaters if you need like a quick reference, but
--- do not modify, and do not copy-paste code from self file unless you are an avid scripter who knows what they are doing.
+-- this SquAPI file does have some mini-documentation on paramaters if you need like a quick reference, but
+-- do not modify, and do not copy-paste code from this file unless you are an avid scripter who knows what they are doing.
 
 
 -- Don't be afraid to ask me for help, just make sure to provide as much info as possible so I or someone can help you faster.
@@ -78,19 +78,19 @@ squapi.tails = {}
 squapi.tail = {}
 squapi.tail.__index = squapi.tail
 
----TAIL PHYSICS - self will add physics to your tails when you spin, move, jump, etc. Has the option to have an idle tail movement, and can work with a tail with any number of segments.
+---TAIL PHYSICS - this will add physics to your tails when you spin, move, jump, etc. Has the option to have an idle tail movement, and can work with a tail with any number of segments.
 ---@param tailSegmentList table<ModelPart> The list of each individual tail segment of your tail.
 ---@param idleXMovement? number Defaults to `15`, how much the tail should sway side to side.
 ---@param idleYMovement? number Defaults to `5`, how much the tail should sway up and down.
 ---@param idleXSpeed? number Defaults to `1.2`, how fast the tail should sway side to side.
 ---@param idleYSpeed? number Defaults to `2`, how fast the tail should sway up and down.
 ---@param bendStrength? number Defaults to `2`, how strongly the tail moves when you move.
----@param velocityPush? number Defaults to `0`, self will cause the tail to bend when you move forward/backward, good if your tail is bent downward or upward.
----@param initialMovementOffset? number Defaults to `0`, self will offset the tails initial sway, self is good for when you have multiple tails and you want to desync them.
+---@param velocityPush? number Defaults to `0`, this will cause the tail to bend when you move forward/backward, good if your tail is bent downward or upward.
+---@param initialMovementOffset? number Defaults to `0`, this will offset the tails initial sway, this is good for when you have multiple tails and you want to desync them.
 ---@param offsetBetweenSegments? number Defaults to `1`, how much each tail segment should be offset from the previous one.
 ---@param stiffness? number Defaults to `0.005`, how stiff the tail should be.
 ---@param bounce? number Defaults to `0.9`, how bouncy the tail should be.
----@param flyingOffset? number Defaults to `90`, when flying, riptiding, or swimming, it may look strange to have the tail stick out, so instead it will rotate to self value(so use self to flatten your tail during these movements).
+---@param flyingOffset? number Defaults to `90`, when flying, riptiding, or swimming, it may look strange to have the tail stick out, so instead it will rotate to this value(so use this to flatten your tail during these movements).
 ---@param downLimit? number Defaults to `-90`, the lowest each tail segment can rotate.
 ---@param upLimit? number Defaults to `45`, the highest each tail segment can rotate.
 ---@return SquAPI.Tail
@@ -229,11 +229,11 @@ squapi.ears = {}
 squapi.ear = {}
 squapi.ear.__index = squapi.ear
 
----EAR PHYSICS - self adds physics to your ear(s) when you move, and has options for different ear types.
+---EAR PHYSICS - this adds physics to your ear(s) when you move, and has options for different ear types.
 ---@param leftEar ModelPart The left ear's model path.
----@param rightEar? ModelPart The right ear's model path, if you don't have a right ear, just leave self blank or set to nil.
+---@param rightEar? ModelPart The right ear's model path, if you don't have a right ear, just leave this blank or set to nil.
 ---@param rangeMultiplier? number Defaults to `1`, how far the ears should rotate with your head.
----@param horizontalEars? boolean Defaults to `false`, if you have elf-like ears(ears that stick out horizontally), set self to true.
+---@param horizontalEars? boolean Defaults to `false`, if you have elf-like ears(ears that stick out horizontally), set this to true.
 ---@param bendStrength? number Defaults to `2`, how much the ears should move when you move.
 ---@param doEarFlick? boolean Defaults to `true`, whether or not the ears should randomly flick.
 ---@param earFlickChance? number Defaults to `400`, how often the ears should flick in ticks, timer is random between 0 to n ticks.
@@ -265,22 +265,22 @@ function squapi.ear:new(leftEar, rightEar, rangeMultiplier, horizontalEars, bend
   -- CONTROL -------------------------------------------------------------------------
 
   self.enabled = true
-  ---Toggle self ear on or off
+  ---Toggle this ear on or off
   function self:toggle()
     self.enabled = not self.enabled
   end
 
-  ---Disable self ear
+  ---Disable this ear
   function self:disable()
     self.enabled = false
   end
 
-  ---Enable self ear
+  ---Enable this ear
   function self:enable()
     self.enabled = true
   end
 
-  ---Sets if self ear is enabled
+  ---Sets if this ear is enabled
   ---@param bool boolean
   function self:setEnabled(bool)
     assert(type(bool) == "boolean",
@@ -373,9 +373,9 @@ function squapi.ear:new(leftEar, rightEar, rangeMultiplier, horizontalEars, bend
   return self
 end
 
----CROUCH ANIMATION - self allows you to set an animation for your crouch (self can either be a static pose for crouching, or an animation to transition to crouching)<br><br>It also allows you to optionally set an uncrouch animation, and includes the same features mentioned for crawling if you need as well.
----@param crouch Animation The animation to play when you crouch. Make sure self animation is on "hold on last frame" and override.
----@param uncrouch? Animation The animation to play when you uncrouch. make sure to set to "play once" and set to override. If it's just a pose with no actual animation, than you should leave self blank or set to nil.
+---CROUCH ANIMATION - this allows you to set an animation for your crouch (this can either be a static pose for crouching, or an animation to transition to crouching)<br><br>It also allows you to optionally set an uncrouch animation, and includes the same features mentioned for crawling if you need as well.
+---@param crouch Animation The animation to play when you crouch. Make sure this animation is on "hold on last frame" and override.
+---@param uncrouch? Animation The animation to play when you uncrouch. make sure to set to "play once" and set to override. If it's just a pose with no actual animation, than you should leave this blank or set to nil.
 ---@param crawl? Animation Same as crouch but for crawling.
 ---@param uncrawl? Animation Same as uncrouch but for crawling.
 ---@class SquAPI.Crouch
@@ -419,7 +419,7 @@ squapi.bewbs = {}
 squapi.bewb = {}
 squapi.bewb.__index = squapi.bewb
 
----BEWB PHYSICS - self can add bewb physics to your avatar, which for some reason is also versatile for non-tiddy related activities.
+---BEWB PHYSICS - this can add bewb physics to your avatar, which for some reason is also versatile for non-tiddy related activities.
 ---@param element ModelPart The bewb element that you want to affect (models.[modelname].path).
 ---@param bendability? number Defaults to `2`, how much the bewb should move when you move.
 ---@param stiff? number Defaults to `0.05`, how stiff the bewb should be.
@@ -519,10 +519,10 @@ squapi.randimations = {}
 squapi.randimation = {}
 squapi.randimation.__index = squapi.randimation
 
----RANDOM ANIMATION OBJECT - self will randomly play a given animation with a modifiable chance. (good for blinking)
+---RANDOM ANIMATION OBJECT - this will randomly play a given animation with a modifiable chance. (good for blinking)
 ---@param animation Animation The animation to play.
 ---@param chanceRange? number Defaults to `200`, an optional paramater that sets the range. 0 means every tick, larger values mean lower chances of playing every tick.
----@param stopOnSleep? boolean Defaults to `false`, if self is for blinking set self to true so that it doesn't blink while sleeping.
+---@param stopOnSleep? boolean Defaults to `false`, if this is for blinking set this to true so that it doesn't blink while sleeping.
 ---@return SquAPI.Randimation
 function squapi.randimation:new(animation, chanceRange, stopOnSleep)
   ---@class SquAPI.Randimation
@@ -537,22 +537,22 @@ function squapi.randimation:new(animation, chanceRange, stopOnSleep)
   -- CONTROL -------------------------------------------------------------------------
 
   self.enabled = true
-  ---Toggle self randimation on or off
+  ---Toggle this randimation on or off
   function self:toggle()
     self.enabled = not self.enabled
   end
 
-  ---Disable self randimation
+  ---Disable this randimation
   function self:disable()
     self.enabled = false
   end
 
-  ---Enable self randimation
+  ---Enable this randimation
   function self:enable()
     self.enabled = true
   end
 
-  ---Sets if self randimation is enabled
+  ---Sets if this randimation is enabled
   ---@param bool boolean
   function self:setEnabled(bool)
     assert(type(bool) == "boolean",
@@ -579,13 +579,13 @@ squapi.eyes = {}
 squapi.eye = {}
 squapi.eye.__index = squapi.eye
 
----MOVING EYES - Moves an eye based on the head rotation to look toward where you look; should work with any general eye type.<br><br>Note: you call self function for each eye, so if you have two eyes you will call self function twice (one for each eye).
+---MOVING EYES - Moves an eye based on the head rotation to look toward where you look; should work with any general eye type.<br><br>Note: you call this function for each eye, so if you have two eyes you will call this function twice (one for each eye).
 ---@param element ModelPart The eye element that is going to be moved, each eye is seperate.
 ---@param leftDistance? number Defaults to `0.25`, the distance from the eye to it's leftmost posistion.
 ---@param rightDistance? number Defaults to `1.25`, the distance from the eye to it's rightmost posistion.
 ---@param upDistance? number Defaults to `0.5`, the distance from the eye to it's upmost posistion.
 ---@param downDistance? number Defaults to `0.5`, the distance from the eye to it's downmost posistion.
----@param switchValues? boolean Defaults to `false`, self will switch from side to side movement to front back movement. self is good if the eyes are on the *side* of the head rather than the *front*.
+---@param switchValues? boolean Defaults to `false`, this will switch from side to side movement to front back movement. this is good if the eyes are on the *side* of the head rather than the *front*.
 ---@return SquAPI.Eye
 function squapi.eye:new(element, leftDistance, rightDistance, upDistance, downDistance, switchValues)
   ---@class SquAPI.Eye
@@ -614,22 +614,22 @@ function squapi.eye:new(element, leftDistance, rightDistance, upDistance, downDi
   end
 
   self.enabled = true
-  ---Toggles self eye on or off
+  ---Toggles this eye on or off
   function self:toggle()
     self.enabled = not self.enabled
   end
 
-  ---Disables self eye
+  ---Disables this eye
   function self:disable()
     self.enabled = false
   end
 
-  ---Enables self eye
+  ---Enables this eye
   function self:enable()
     self.enabled = true
   end
 
-  ---Sets if self eye is enabled
+  ---Sets if this eye is enabled
   ---@param bool boolean
   function self:setEnabled(bool)
     assert(type(bool) == "boolean",
@@ -637,7 +637,7 @@ function squapi.eye:new(element, leftDistance, rightDistance, upDistance, downDi
     self.enabled = bool
   end
 
-  ---Resets self eye's position to its initial posistion
+  ---Resets this eye's position to its initial posistion
   function self:zero()
     self.x, self.y = 0, 0
   end
@@ -683,7 +683,7 @@ squapi.hoverPoints = {}
 squapi.hoverPoint = {}
 squapi.hoverPoint.__index = squapi.hoverPoint
 
----HOVER POINT ITEM - self will cause self element to naturally float to it’s normal position rather than being locked with the players movement. Great for floating companions.
+---HOVER POINT ITEM - this will cause this element to naturally float to it’s normal position rather than being locked with the players movement. Great for floating companions.
 ---@param element ModelPart The element you are moving.
 ---@param elementOffset? Vector3 Defaults to `vec(0,0,0)`, the position of the hover point relative to you.
 ---@param springStrength? number Defaults to `0.2`, how strongly the object is pulled to it's original spot.
@@ -715,22 +715,22 @@ function squapi.hoverPoint:new(element, elementOffset, springStrength, mass, res
   -- CONTROL -------------------------------------------------------------------------
 
   self.enabled = true
-  ---Toggles self hover point on or off
+  ---Toggles this hover point on or off
   function self:toggle()
     self.enabled = not self.enabled
   end
 
-  ---Disables self hover point
+  ---Disables this hover point
   function self:disable()
     self.enabled = false
   end
 
-  ---Enables self hover point
+  ---Enables this hover point
   function self:enable()
     self.enabled = true
   end
 
-  ---Sets if self hover point is enabled
+  ---Sets if this hover point is enabled
   ---@param bool boolean
   function self:setEnabled(bool)
     assert(type(bool) == "boolean",
@@ -738,7 +738,7 @@ function squapi.hoverPoint:new(element, elementOffset, springStrength, mass, res
     self.enabled = bool
   end
 
-  ---Resets self hover point's position to its initial position
+  ---Resets this hover point's position to its initial position
   function self:reset()
     local yaw
     if self.rotateWithPlayer then
@@ -846,7 +846,7 @@ squapi.leg.__index = squapi.leg
 ---LEG MOVEMENT - Will make an element mimic the rotation of a vanilla leg, but allows you to control the strength. Good for different length legs or legs under dresses.
 ---@param element ModelPart The element you want to apply the movement to.
 ---@param strength? number Defaults to `1`, how much it rotates.
----@param isRight? boolean Defaults to `false`, if self is the right leg or not.
+---@param isRight? boolean Defaults to `false`, if this is the right leg or not.
 ---@param keepPosition? boolean Defaults to `true`, if you want the element to keep it's position as well.
 ---@return SquAPI.Leg
 function squapi.leg:new(element, strength, isRight, keepPosition)
@@ -888,7 +888,7 @@ squapi.arm.__index = squapi.arm
 ---ARM MOVEMENT - Will make an element mimic the rotation of a vanilla arm, but allows you to control the strength. Good for different length arms.
 ---@param element ModelPart The element you want to apply the movement to.
 ---@param strength? number Defaults to `1`, how much it rotates.
----@param isRight? boolean Defaults to `false`, if self is the right arm or not.
+---@param isRight? boolean Defaults to `false`, if this is the right arm or not.
 ---@param keepPosition? boolean Defaults to `true`, if you want the element to keep it's position as well.
 ---@return SquAPI.Arm
 function squapi.arm:new(element, strength, isRight, keepPosition)
@@ -929,11 +929,11 @@ squapi.smoothHead = {}
 squapi.smoothHead.__index = squapi.smoothHead
 
 ---SMOOTH HEAD - Mimics a vanilla player head, but smoother and with some extra life. Can also do smooth Torsos and Smooth Necks!
----@param element ModelPart|table<ModelPart> The head element that you wish to effect. If you want a smooth neck or torso, instead of a single element, input a table of head elements(imagine it like {element1, element2, etc.}). self will apply the head rotations to each of these.
----@param strength? number|table<number> Defaults to `1`, the target rotation is multiplied by self factor. If you want a smooth neck or torso, instead of an single number, you can put in a table(imagine it like {strength1, strength2, etc.}). self will apply each strength to each respective element.(make sure it is the same length as your element table)
----@param tilt? number Defaults to `0.1`, for context the smooth head applies a slight tilt to the head as it's rotated toward the side, self controls the strength of that tilt.
+---@param element ModelPart|table<ModelPart> The head element that you wish to effect. If you want a smooth neck or torso, instead of a single element, input a table of head elements(imagine it like {element1, element2, etc.}). this will apply the head rotations to each of these.
+---@param strength? number|table<number> Defaults to `1`, the target rotation is multiplied by this factor. If you want a smooth neck or torso, instead of an single number, you can put in a table(imagine it like {strength1, strength2, etc.}). this will apply each strength to each respective element.(make sure it is the same length as your element table)
+---@param tilt? number Defaults to `0.1`, for context the smooth head applies a slight tilt to the head as it's rotated toward the side, this controls the strength of that tilt.
 ---@param speed? number Defaults to `1`, how fast the head will rotate toward the target rotation.
----@param keepOriginalHeadPos? boolean|number Defaults to `true`, when true the heads position will follow the vanilla head position. For example when crouching the head will shift down to follow. If set to a number, changes which modelpart gets moved when doing actions such as crouching. self should normally be set to the neck modelpart.
+---@param keepOriginalHeadPos? boolean|number Defaults to `true`, when true the heads position will follow the vanilla head position. For example when crouching the head will shift down to follow. If set to a number, changes which modelpart gets moved when doing actions such as crouching. this should normally be set to the neck modelpart.
 ---@param fixPortrait? boolean Defaults to `true`, sets whether or not the portrait should be applied if a group named "head" is found in the elements list
 function squapi.smoothHead:new(element, strength, tilt, speed, keepOriginalHeadPos, fixPortrait)
   ---@class SquAPI.SmoothHead
@@ -1002,22 +1002,22 @@ function squapi.smoothHead:new(element, strength, tilt, speed, keepOriginalHeadP
   end
 
   self.enabled = true
-  ---Toggles self smooth head on or off
+  ---Toggles this smooth head on or off
   function self:toggle()
     self.enabled = not self.enabled
   end
 
-  ---Disables self smooth head
+  ---Disables this smooth head
   function self:disable()
     self.enabled = false
   end
 
-  ---Enables self smooth head
+  ---Enables this smooth head
   function self:enable()
     self.enabled = true
   end
 
-  ---Sets if self smooth head is enabled
+  ---Sets if this smooth head is enabled
   ---@param bool boolean
   function self:setEnabled(bool)
     assert(type(bool) == "boolean",
@@ -1025,7 +1025,7 @@ function squapi.smoothHead:new(element, strength, tilt, speed, keepOriginalHeadP
     self.enabled = bool
   end
 
-  ---Resets self smooth head's position and rotation to their initial values
+  ---Resets this smooth head's position and rotation to their initial values
   function self:zero()
     for _, v in ipairs(self.element) do
       v:setPos(0, 0, 0)
@@ -1088,9 +1088,9 @@ squapi.bounceWalks = {}
 squapi.bounceWalk = {}
 squapi.bounceWalk.__index = squapi.bounceWalk
 
----BOUNCE WALK - self will make your character curtly bounce/hop with each step (the strength of self bounce can be controlled).
+---BOUNCE WALK - this will make your character curtly bounce/hop with each step (the strength of this bounce can be controlled).
 ---@param model ModelPart The path to your model element.
----@param bounceMultiplier? number Defaults to `1`, self multiples how much the bounce occurs.
+---@param bounceMultiplier? number Defaults to `1`, this multiples how much the bounce occurs.
 ---@return SquAPI.BounceWalk
 function squapi.bounceWalk:new(model, bounceMultiplier)
   ---@class SquAPI.BounceWalk
@@ -1103,22 +1103,22 @@ function squapi.bounceWalk:new(model, bounceMultiplier)
   -- CONTROL -------------------------------------------------------------------------
 
   self.enabled = true
-  ---Toggle self bounce walk on or off
+  ---Toggle this bounce walk on or off
   function self:toggle()
     self.enabled = not self.enabled
   end
 
-  ---Disable self bounce walk
+  ---Disable this bounce walk
   function self:disable()
     self.enabled = false
   end
 
-  ---Enable self bounce walk
+  ---Enable this bounce walk
   function self:enable()
     self.enabled = true
   end
 
-  ---Sets if self bounce walk is enabled
+  ---Sets if this bounce walk is enabled
   ---@param bool boolean
   function self:setEnabled(bool)
     assert(type(bool) == "boolean",
@@ -1154,7 +1154,7 @@ squapi.taurs = {}
 squapi.taur = {}
 squapi.taur.__index = squapi.taur
 
----TAUR PHYSICS - self will add some extra movement to taur-based models when you jump/fall.
+---TAUR PHYSICS - this will add some extra movement to taur-based models when you jump/fall.
 ---@param taurBody ModelPart The group of the body that contains all parts of the actual centaur part of the body, pivot should be placed near the connection between body and taurs body.
 ---@param frontLegs? ModelPart The group that contains both front legs.
 ---@param backLegs? ModelPart The group that contains both back legs.
@@ -1174,22 +1174,22 @@ function squapi.taur:new(taurBody, frontLegs, backLegs)
 
   -- CONTROL -------------------------------------------------------------------------
   self.enabled = true
-  ---Toggle self taur on or off
+  ---Toggle this taur on or off
   function self:toggle()
     self.enabled = not self.enabled
   end
 
-  ---Disable self taur
+  ---Disable this taur
   function self:disable()
     self.enabled = false
   end
 
-  ---Enable self taur
+  ---Enable this taur
   function self:enable()
     self.enabled = true
   end
 
-  ---Sets if self taur is enabled
+  ---Sets if this taur is enabled
   ---@param bool boolean
   function self:setEnabled(bool)
     assert(type(bool) == "boolean",
@@ -1243,13 +1243,13 @@ squapi.FPHands = {}
 squapi.FPHand = {}
 squapi.FPHand.__index = squapi.FPHand
 
----CUSTOM FIRST PERSON HAND<br>**!!Make sure the setting for modifying first person hands is enabled in the Figura settings for self to work properly!!**
+---CUSTOM FIRST PERSON HAND<br>**!!Make sure the setting for modifying first person hands is enabled in the Figura settings for this to work properly!!**
 ---@param element ModelPart The actual hand element to change.
 ---@param x? number Defaults to `0`, the x change.
 ---@param y? number Defaults to `0`, the y change.
 ---@param z? number Defaults to `0`, the z change.
----@param scale? number Defaults to `1`, self will multiply the size of the element by self size.
----@param onlyVisibleInFP? boolean Defaults to `false`, self will make the element invisible when not in first person if true.
+---@param scale? number Defaults to `1`, this will multiply the size of the element by this size.
+---@param onlyVisibleInFP? boolean Defaults to `false`, this will make the element invisible when not in first person if true.
 ---@return SquAPI.FPHand
 function squapi.FPHand:new(element, x, y, z, scale, onlyVisibleInFP)
   ---@class SquAPI.FPHand
@@ -1267,7 +1267,7 @@ function squapi.FPHand:new(element, x, y, z, scale, onlyVisibleInFP)
 
   -- CONTROL -------------------------------------------------------------------------
 
-  ---Set self first person hand's position
+  ---Set the first person hand's position
   ---@param _x number X position
   ---@param _y number Y position
   ---@param _z number Z position
@@ -1279,7 +1279,7 @@ function squapi.FPHand:new(element, x, y, z, scale, onlyVisibleInFP)
 
   -- UPDATES -------------------------------------------------------------------------
 
-  ---Run render function on self first person hand
+  ---Run render function on first person hand
   ---@param context Event.Render.context
   function self:render(_, context)
     if context == "FIRST_PERSON" then
@@ -1303,8 +1303,8 @@ end
 ---Easy-use Animated Texture.
 ---@param element ModelPart The part of your model who's texture will be aniamted.
 ---@param numberOfFrames number The number of frames.
----@param framePercent number What percent width/height the uv takes up of the whole texture. For example: if there is a 100x100 texture, and the uv is 20x20, self will be .20
----@param slowFactor? number Defaults to `1`, increase self to slow down the animation.
+---@param framePercent number What percent width/height the uv takes up of the whole texture. For example: if there is a 100x100 texture, and the uv is 20x20, this will be .20
+---@param slowFactor? number Defaults to `1`, increase this to slow down the animation.
 ---@param vertical? boolean Defaults to `false`, set to true if you'd like the animation frames to go down instead of right.
 ---@class SquAPI.AnimateTexture
 function squapi.animateTexture(element, numberOfFrames, framePercent, slowFactor, vertical)
