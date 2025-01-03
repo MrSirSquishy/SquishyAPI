@@ -263,7 +263,7 @@ end
 squassets.vanillaElement = {}
 squassets.vanillaElement.__index = squassets.vanillaElement
 function squassets.vanillaElement:new(element, strength, keepPosition)
-  local this = setmetatable({}, squassets.vanillaElement)
+  local self = setmetatable({}, squassets.vanillaElement)
 
   -- INIT -------------------------------------------------------------------------
     self.keepPosition = keepPosition 
@@ -329,54 +329,54 @@ function squassets.vanillaElement:new(element, strength, keepPosition)
     end
   end
 
-  return this
+  return self
 end
 
 squassets.BERP3D = {}
 squassets.BERP3D.__index = squassets.BERP3D
 function squassets.BERP3D:new(stiff, bounce, lowerLimit, upperLimit, initialPos, initialVel)
-  local this = setmetatable({}, squassets.BERP3D)
+  local self = setmetatable({}, squassets.BERP3D)
 
-  this.stiff = stiff or 0.1
-  this.bounce = bounce or 0.1
-  this.pos = initialPos or vec(0, 0, 0)
-  this.vel = initialVel or vec(0, 0, 0)
-  this.acc = vec(0, 0, 0)
-  this.lower = lowerLimit or { nil, nil, nil }
-  this.upper = upperLimit or { nil, nil, nil }
+  self.stiff = stiff or 0.1
+  self.bounce = bounce or 0.1
+  self.pos = initialPos or vec(0, 0, 0)
+  self.vel = initialVel or vec(0, 0, 0)
+  self.acc = vec(0, 0, 0)
+  self.lower = lowerLimit or { nil, nil, nil }
+  self.upper = upperLimit or { nil, nil, nil }
 
   --target is the target position
   --dt, or delta time, the time between now and the last update(delta from the events.update() function)
   --if you want it to have a different stiff or bounce when run input a different stiff bounce
-  function this:berp(target, dt, _stiff, _bounce)
+  function self:berp(target, dt, _stiff, _bounce)
     target = target or vec(0, 0, 0)
     dt = dt or 1
 
     for i = 1, 3 do
       --certified bouncy math
-      local dif = (target[i]) - this.pos[i]
-      this.acc[i] = ((dif * math.min(_stiff or this.stiff, 1)) * dt) --based off of spring force F = -kx
-      this.vel[i] = this.vel[i] + this.acc[i]
+      local dif = (target[i]) - self.pos[i]
+      self.acc[i] = ((dif * math.min(_stiff or self.stiff, 1)) * dt) --based off of spring force F = -kx
+      self.vel[i] = self.vel[i] + self.acc[i]
 
       --changes the position, but adds a bouncy bit that both overshoots and decays the movement
-      this.pos[i] = this.pos[i] + (dif * (1 - math.min(_bounce or this.bounce, 1)) + this.vel[i]) * dt
+      self.pos[i] = self.pos[i] + (dif * (1 - math.min(_bounce or self.bounce, 1)) + self.vel[i]) * dt
 
       --limits range
 
-      if this.upper[i] and this.pos[i] > this.upper[i] then
-        this.pos[i] = this.upper[i]
-        this.vel[i] = 0
-      elseif this.lower[i] and this.pos[i] < this.lower[i] then
-        this.pos[i] = this.lower
-        this.vel[i] = 0
+      if self.upper[i] and self.pos[i] > self.upper[i] then
+        self.pos[i] = self.upper[i]
+        self.vel[i] = 0
+      elseif self.lower[i] and self.pos[i] < self.lower[i] then
+        self.pos[i] = self.lower
+        self.vel[i] = 0
       end
     end
 
     --returns position so that you can immediately apply the position as it is changed.
-    return this.pos
+    return self.pos
   end
 
-  return this
+  return self
 end
 
 --stiffness factor, > 0
@@ -385,45 +385,45 @@ end
 squassets.BERP = {}
 squassets.BERP.__index = squassets.BERP
 function squassets.BERP:new(stiff, bounce, lowerLimit, upperLimit, initialPos, initialVel)
-  local this = setmetatable({}, squassets.BERP)
+  local self = setmetatable({}, squassets.BERP)
 
-  this.stiff = stiff or 0.1
-  this.bounce = bounce or 0.1
-  this.pos = initialPos or 0
-  this.vel = initialVel or 0
-  this.acc = 0
-  this.lower = lowerLimit or nil
-  this.upper = upperLimit or nil
+  self.stiff = stiff or 0.1
+  self.bounce = bounce or 0.1
+  self.pos = initialPos or 0
+  self.vel = initialVel or 0
+  self.acc = 0
+  self.lower = lowerLimit or nil
+  self.upper = upperLimit or nil
 
   --target is the target position
   --dt, or delta time, the time between now and the last update(delta from the events.update() function)
   --if you want it to have a different stiff or bounce when run input a different stiff bounce
-  function this:berp(target, dt, _stiff, _bounce)
+  function self:berp(target, dt, _stiff, _bounce)
     dt = dt or 1
 
     --certified bouncy math
-    local dif = (target or 10) - this.pos
-    this.acc = ((dif * math.min(_stiff or this.stiff, 1)) * dt) --based off of spring force F = -kx
-    this.vel = this.vel + this.acc
+    local dif = (target or 10) - self.pos
+    self.acc = ((dif * math.min(_stiff or self.stiff, 1)) * dt) --based off of spring force F = -kx
+    self.vel = self.vel + self.acc
 
     --changes the position, but adds a bouncy bit that both overshoots and decays the movement
-    this.pos = this.pos + (dif * (1 - math.min(_bounce or this.bounce, 1)) + this.vel) * dt
+    self.pos = self.pos + (dif * (1 - math.min(_bounce or self.bounce, 1)) + self.vel) * dt
 
     --limits range
 
-    if this.upper and this.pos > this.upper then
-      this.pos = this.upper
-      this.vel = 0
-    elseif this.lower and this.pos < this.lower then
-      this.pos = this.lower
-      this.vel = 0
+    if self.upper and self.pos > self.upper then
+      self.pos = self.upper
+      self.vel = 0
+    elseif self.lower and self.pos < self.lower then
+      self.pos = self.lower
+      self.vel = 0
     end
 
     --returns position so that you can immediately apply the position as it is changed.
-    return this.pos
+    return self.pos
   end
 
-  return this
+  return self
 end
 
 local _mp_getName = models.getName
