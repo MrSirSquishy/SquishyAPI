@@ -68,9 +68,9 @@ function squassets.sideVel()
   return (player:getVelocity() * matrices.rotation3(0, player:getRot().y, 0)).x
 end
 
---returns a cleaner vanilla head rotation value to use
-function squassets.getHeadRot()
-  return (vanilla_model.HEAD:getOriginRot() + 180) % 360 - 180
+--returns a cleaner vanilla rotation value to use
+function squassets.clampedRot(v)
+  return (v:getOriginRot() + 180) % 360 - 180
 end
 
 --Math Functions

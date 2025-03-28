@@ -302,7 +302,7 @@ function squapi.ear:new(leftEar, rightEar, rangeMultiplier, horizontalEars, bend
       local vel = math.min(math.max(-0.75, squassets.forwardVel()), 0.75)
       local yvel = math.min(math.max(-1.5, squassets.verticalVel()), 1.5) * 5
       local svel = math.min(math.max(-0.5, squassets.sideVel()), 0.5)
-      local headrot = squassets.getHeadRot()
+      local headrot = squassets.clampedRot(vanilla_model.HEAD)
       local bend = self.bendStrength
       if headrot[1] < -22.5 then bend = -bend end
 
@@ -647,7 +647,7 @@ function squapi.eye:new(element, leftDistance, rightDistance, upDistance, downDi
   ---Run tick function on eye
   function self:tick()
     if self.enabled then
-      local headrot = squassets.getHeadRot()
+      local headrot = squassets.clampedRot(vanilla_model.HEAD)
       headrot[2] = math.max(math.min(50, headrot[2]), -50)
 
       --parabolic curve so that you can control the middle position of the eyes.
@@ -866,10 +866,10 @@ function squapi.leg:new(element, strength, isRight, keepPosition)
   ---@return Vector3 #Vanilla leg position
   function self:getVanilla()
     if self.isRight then
-      self.rot = vanilla_model.RIGHT_LEG:getOriginRot()
+      self.rot = squassets.clampedRot(vanilla_model.RIGHT_LEG)
       self.pos = vanilla_model.RIGHT_LEG:getOriginPos()
     else
-      self.rot = vanilla_model.LEFT_LEG:getOriginRot()
+      self.rot = squassets.clampedRot(vanilla_model.LEFT_LEG)
       self.pos = vanilla_model.LEFT_LEG:getOriginPos()
     end
     return self.rot, self.pos
@@ -910,9 +910,9 @@ function squapi.arm:new(element, strength, isRight, keepPosition)
   ---@return Vector3 #Vanilla arm position
   function self:getVanilla()
     if self.isRight then
-      self.rot = vanilla_model.RIGHT_ARM:getOriginRot()
+      self.rot = squassets.clampedRot(vanilla_model.RIGHT_ARM)
     else
-      self.rot = vanilla_model.LEFT_ARM:getOriginRot()
+      self.rot = squassets.clampedRot(vanilla_model.LEFT_ARM)
     end
     self.pos = -vanilla_model.LEFT_ARM:getOriginPos()
     return self.rot, self.pos
@@ -1039,7 +1039,7 @@ function squapi.smoothHead:new(element, strength, tilt, speed, keepOriginalHeadP
   ---Run tick function on smooth head
   function self:tick()
     if self.enabled then
-      local vanillaHeadRot = squassets.getHeadRot()
+      local vanillaHeadRot = squassets.clampedRot(vanilla_model.HEAD)
 
       self.headRot[1] = self.headRot[1] + (vanillaHeadRot[1] - self.headRot[1]) * self.speed
       self.headRot[2] = self.headRot[2] + (vanillaHeadRot[2] - self.headRot[2]) * self.speed
