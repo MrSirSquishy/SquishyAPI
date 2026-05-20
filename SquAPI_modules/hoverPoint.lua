@@ -1,6 +1,6 @@
 ---@meta _
 local squassets
-local assetPath = "./SquAssets"
+local assetPath = (...):gsub(".SquAPI_modules", "") .. ".SquAssets"
 if pcall(require, assetPath) then squassets = require(assetPath) end
 assert(squassets, "§4The hoverPoint module requires SquAssets, which was not found!§c")
 
@@ -39,6 +39,8 @@ function hoverPoint:new(element, elementOffset, springStrength, mass, resistance
     self.vel = vec(0,0,0)
     self.init = true
     self.delay = 0
+    
+    self.enabled = true
 
     self = setmetatable(self, {__index = hoverPoint})
     table.insert(hoverPoint.all, self)
@@ -95,7 +97,7 @@ function hoverPoint:tick()
             self.elementOffset.y,
             sin*self.elementOffset.x + cos*self.elementOffset.z
         )
-
+        
         if self.init then
             self.init = false
             self.pos = player:getPos() + offset/16
@@ -107,7 +109,7 @@ function hoverPoint:tick()
         local target = player:getPos() + offset/16
         local pos = self.element:partToWorldMatrix():apply()
         local dif = self.pos - target
-
+        
         local force = vec(0,0,0)
 
         if self.delay == 0 then
